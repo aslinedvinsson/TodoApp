@@ -57,7 +57,42 @@ class TaskHandler:
             #print(f'{i}.{task.task_name}')
             print(f'Task: {task.task_name} Description: {task.description} Due Date: {task.due_date}, Priority: {task.priority}')
        
-    
+    def add_task(self, task_data, worksheet_name):
+        self.worksheet.append_row([worksheet_name]+ task_data)
+        self.load_tasks()
+        
+    def update_task(self, task, new_data):
+        self.worksheet.append_row(new_data)
+        updated_data = []
+        for task in tasks:
+            row = [self.worksheet.title, task.task_name, task.description, task.due_date, task.priority]
+            updated_data.append(row)
+        for i, task in enumerate(tasks):
+            updated_data[i] = [self.worksheet.title, task.task_name, task.description, task.due_date, task.priority]
+        # Clear the content of the worksheet
+        self.worksheet.clear()
+        # Add the updated data back to the worksheet
+        header_row = ['todo_title', 'task_name', 'description', 'due date', 'priority']
+        self.worksheet.append_row(header_row)
+        self.worksheet.append_rows(updated_data)
+        
+    #def sort_tasks()
+
+    def delete_task(self, task_delete):
+        tasks = self.tasks
+        if not tasks:
+            print('No tasks to delete')
+            return
+
+        if 1 <= task_index <= len(tasks):
+            deleted_task = tasks.pop(task_index - 1)
+            print(f'You deleted {deleted_task.task_name}')
+        else:
+            print('Invalid task index. Please try again')  # TODO Add a loop
+
+        # Update the tasks list
+        self.tasks = tasks
+
 
 class Sheet:
     def __init__(self):
@@ -303,19 +338,19 @@ class UserInputHandler:
         return [task_name, task_description, due_date, priority]
     
     def get_delete_task_input(self):
-       while True:
-                    print('Are you sure you want to delete a task? Once '\
-                    'you have deleted it, you can not get it back. If you do '\
-                    'NOT want to delete a task, press q.')
-                    self.display_all_tasks()
-                    task_delete = input('Enter the name of the task '\
-                    'you would like to delete: \n').lower()
-                    if task_delete.lower() == 'q':
-                        print('Exiting the program')
-                        sys.exit()
-                    else:
-                        self.delete_task(task_delete)
-                        break
+        while True:
+            print('Are you sure you want to delete a task? Once '\
+            'you have deleted it, you can not get it back. If you do '\
+            'NOT want to delete a task, press q.')
+            self.display_all_tasks()
+            task_delete = input('Enter the name of the task '\
+            'you would like to delete: \n').lower()
+            if task_delete.lower() == 'q':
+                print('Exiting the program')
+                sys.exit()
+            else:
+                self.delete_task(task_delete)
+                break
 
 class TodoList:
     def __init__(self, task_handler, worksheet, worksheet_name):
@@ -341,6 +376,8 @@ def main():
     worksheet_name = input('Enter the name of the worksheet you would like to open: \n').lower() 
     worksheet = worksheet_handler.open_worksheet(worksheet_name)
     task_handler = TaskHandler(worksheet)
-
+    user_input_handler = UserInputHandler(task_handler)
+    todo_list = TodoList(task_handler, worksheet, user_input_handler)
+    
 if __name__ == '__main__':
     main()
