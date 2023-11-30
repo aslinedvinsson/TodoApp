@@ -46,6 +46,8 @@ class TaskHandler:
                 task = Task(row[1], row[2], row[3], row[4])
                 self.tasks.append(task)
 
+    
+
 class Sheet:
     def __init__(self):
         self.sheet = self.open_spreadsheet()
@@ -209,7 +211,20 @@ class WorksheetHandler:
             else:
                 return worksheet_name
 
+class TodoList:
+    def __init__(self, task_handler, worksheet, worksheet_name):
+        self.task_handler = task_handler
+        self.worksheet = worksheet
+        self.worksheet_name = worksheet_name
 
+    def display_choices_for_task(self):
+        print('What would you like to do? Choose one option by entering a letter. You can press q whenever you want quit or get back start and make a new choice')
+        print('a. Add task')
+        print('b. Update task') # #TODO add if q under
+        print('c. Sort tasks') # #TODO add if q under
+        print('d. Delete task') # #TODO add if q under
+        print('e. View current tasks') # #TODO add if q under
+        print('q. Quit')
 
 def main(): 
     sheet = Sheet().sheet
