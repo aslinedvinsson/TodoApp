@@ -18,6 +18,19 @@ SHEET = GSPREAD_CLIENT.open('todo--app')
 # End of section code from the Love Sandwich project
 
 
+class Task:
+    """
+    Class representing a task. Attributes are task_name, description, due_date 
+    and priority. Task name is mandatory for the user to enter, other attributes 
+    are optional. Default number 10 is set on priority if the user does not 
+    enter a priority number.
+    """
+    def __init__(self, task_name, description = None, due_date= None, priority = 10):
+        self.task_name = task_name
+        self.description = description
+        self.due_date = due_date
+        self.priority = priority
+        
 class Sheet:
     def __init__(self):
         self.sheet = self.open_spreadsheet()
@@ -180,6 +193,8 @@ class WorksheetHandler:
                 sys.exit()
             else:
                 return worksheet_name
+
+
 
 def main(): 
     sheet = Sheet().sheet
