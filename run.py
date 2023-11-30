@@ -144,6 +144,7 @@ class WorksheetHandler:
             worksheet.row_values(1)
             worksheet.insert_row(['todo_title', 'task_name', 'description', 'due_date', 'priority', 'color'], 1)
             print(f'Worksheet {worksheet_name} was created')
+            self.task_handler = TaskHandler(worksheet)
             return worksheet
         except gspread.exceptions.APIError as e:
             print(f'Error creating worksheet: {e}')
@@ -157,6 +158,7 @@ class WorksheetHandler:
         try:
             worksheet = self.sheet.worksheet(worksheet_name)
             print(f'{worksheet_name} was opened')
+            self.task_handler = TaskHandler(worksheet)
             return worksheet
         except gspread.exceptions.WorksheetNotFound:
             print(f'Worksheet not found: {worksheet_name}')
@@ -216,10 +218,14 @@ class WorksheetHandler:
             if worksheet_choice == '1':
                 worksheet_name = self.get_worksheet_name()
                 self.create_worksheet(worksheet_name)
+                self.task_handler = TaskHandler(worksheet)
                 
             elif worksheet_choice == '2':
                 worksheet_name = self.get_worksheet_name()
                 worksheet = self.open_worksheet(worksheet_name)
+                #user_input_handler = UserInputHandler(self.task_handler)
+                todo_list = TodoList(self.task_handler, worksheet, worksheet_name)
+                todo_list.start()
                 
             elif worksheet_choice == '3':
                 self.display_existing_worksheets()
@@ -283,17 +289,17 @@ class UserInputHandler:
         print('To add a task you have to enter a task name. All other information is optional to add. Just press Enter when you want to go to the next category.')
     # Task name
         while True:
-            task_name = input('Please add the name of the task: '\n)
+            task_name = input('Please add the name of the task: \n')
             if task_name == '':
                 print('Please add a name of the task you would like to add.')
             else:
                 break
         # Task description
-        task_description = input('Please add a description of the task: '\n) 
+        task_description = input('Please add a description of the task: \n') 
         task_description = task_description if task_description else None
         # Due date
         while True:
-            due_date = input('Please enter a due-date(format 30/09/23): '\n) 
+            due_date = input('Please enter a due-date(format 30/09/23): \n') 
             #if validate_due_date_input(due_date):
             break
             #else:
@@ -301,7 +307,7 @@ class UserInputHandler:
         due_date = due_date if due_date else None
         # Priority
         while True:
-            priority = input('Please choose a priority number between 1-10, where 1 is top priority: '\n)# #TODO  add while loop to test input
+            priority = input('Please choose a priority number between 1-10, where 1 is top priority: \n')# #TODO  add while loop to test input
             if not priority:
                 priority = 10
                 print(f'The default value {priority} is set when you do not add a number.')
@@ -358,6 +364,15 @@ class TodoList:
         self.worksheet = worksheet
         self.worksheet_name = worksheet_name
 
+    def start(self):
+        while True:
+            self.display_choices_for_task()
+            user_choice = self.get_user_choice()
+            if user_choice.lower() == 'q':
+                print('Exiting the program')
+                break
+            self.handle_user_choice(user_choice)
+
     def display_choices_for_task(self):
         print('What would you like to do? Choose one option by entering a letter. You can press q whenever you want quit or get back start and make a new choice')
         print('a. Add task')
@@ -366,6 +381,9 @@ class TodoList:
         print('d. Delete task') # #TODO add if q under
         print('e. View current tasks') # #TODO add if q under
         print('q. Quit')
+
+    def get_user_choice(self): # # TODO move user input to class UserInputHandler
+        return input('Please, enter your choice: \n')
 
 def main(): 
     sheet = Sheet().sheet
@@ -378,6 +396,6 @@ def main():
     task_handler = TaskHandler(worksheet)
     user_input_handler = UserInputHandler(task_handler)
     todo_list = TodoList(task_handler, worksheet, user_input_handler)
-    
+    todo_list.start()
 if __name__ == '__main__':
     main()
