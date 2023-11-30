@@ -30,7 +30,22 @@ class Task:
         self.description = description
         self.due_date = due_date
         self.priority = priority
-        
+
+class TaskHandler:
+    def __init__(self, worksheet):
+        self.worksheet = worksheet
+        if self.worksheet:
+            self.load_tasks()
+
+    def load_tasks(self):
+        if self.worksheet:
+            data = self.worksheet.get_all_values()
+            header_row = data[0]
+            self.tasks = []
+            for row in data[1:]:
+                task = Task(row[1], row[2], row[3], row[4])
+                self.tasks.append(task)
+
 class Sheet:
     def __init__(self):
         self.sheet = self.open_spreadsheet()
@@ -199,11 +214,12 @@ class WorksheetHandler:
 def main(): 
     sheet = Sheet().sheet
     worksheet_handler = WorksheetHandler(sheet)
-
+    task_handler = None
     worksheet_handler.start_worksheet_loop()
 
     worksheet_name = input('Enter the name of the worksheet you would like to open: \n').lower() 
     worksheet = worksheet_handler.open_worksheet(worksheet_name)
+    task_handler = TaskHandler(worksheet)
 
 if __name__ == '__main__':
     main()
