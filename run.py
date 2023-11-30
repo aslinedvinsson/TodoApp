@@ -135,7 +135,7 @@ class WorksheetHandler:
             print('4. Delete a whole worksheet')
             print('q. Quit')
 
-            worksheet_choice = input('Enter your choice: '\n)
+            worksheet_choice = input('Enter your choice: \n')
 
             if worksheet_choice == '1':
                 worksheet_name = self.get_worksheet_name()
@@ -164,8 +164,8 @@ class WorksheetHandler:
         """
         Prompt the user to enter the name of a worksheet.
         """
-         while True:
-            worksheet_name = input('Enter a worksheet name: '\n)
+        while True:
+            worksheet_name = input('Enter a worksheet name: \n')
             if worksheet_name.lower() == 'q':
                 print('Exiting the program')
                 sys.exit()
@@ -178,7 +178,7 @@ def main():
 
     worksheet_handler.start_worksheet_loop()
 
-    worksheet_name = input('Enter the name of the worksheet you would like to open: '\n) # TODO move user input to class UserInputHandler???
+    worksheet_name = input('Enter the name of the worksheet you would like to open: \n') # TODO move user input to class UserInputHandler???
     worksheet = worksheet_handler.open_worksheet(worksheet_name)
 
 if __name__ == '__main__':
