@@ -46,6 +46,17 @@ class TaskHandler:
                 task = Task(row[1], row[2], row[3], row[4])
                 self.tasks.append(task)
 
+    def display_all_tasks(self):
+        self.load_tasks()
+        if not self.tasks:
+           print('No tasks available.')
+           return
+       
+        for i, task in enumerate(self.tasks, start = 1):
+            # return tasks #return a list of tasks
+            #print(f'{i}.{task.task_name}')
+            print(f'Task: {task.task_name} Description: {task.description} Due Date: {task.due_date}, Priority: {task.priority}')
+       
     
 
 class Sheet:
@@ -290,6 +301,21 @@ class UserInputHandler:
         priority = priority if priority else self.task.priority
 
         return [task_name, task_description, due_date, priority]
+    
+    def get_delete_task_input(self):
+       while True:
+                    print('Are you sure you want to delete a task? Once '\
+                    'you have deleted it, you can not get it back. If you do '\
+                    'NOT want to delete a task, press q.')
+                    self.display_all_tasks()
+                    task_delete = input('Enter the name of the task '\
+                    'you would like to delete: \n').lower()
+                    if task_delete.lower() == 'q':
+                        print('Exiting the program')
+                        sys.exit()
+                    else:
+                        self.delete_task(task_delete)
+                        break
 
 class TodoList:
     def __init__(self, task_handler, worksheet, worksheet_name):
