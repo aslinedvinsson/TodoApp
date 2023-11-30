@@ -211,6 +211,69 @@ class WorksheetHandler:
             else:
                 return worksheet_name
 
+class UserInputHandler:
+    def __init__(self, task_handler):
+        self.task_handler = task_handler
+
+    def display_and_select_task_to_update(self, worksheet):
+        tasks = self.task_handler.display_all_tasks()  
+        if not tasks:
+            print('No tasks available to update.')
+            return
+
+        print('Select a task to update: ')
+        for i, task in enumerate(tasks, start=1):
+            print(f'{i}. {task.task_name}')
+        
+        task_index = self.get_task_index()
+
+        try:
+            selected_task = tasks[task_index - 1]
+            return selected_task
+        except IndexError:
+            print('Invalid task index. Please enter a valid index.')
+           
+    def get_add_task_input(self):
+        print('To add a task you have to enter a task name. All other information is optional to add. Just press Enter when you want to go to the next category.')
+    # Task name
+        while True:
+            task_name = input('Please add the name of the task: '\n)
+            if task_name == '':
+                print('Please add a name of the task you would like to add.')
+            else:
+                break
+        # Task description
+        task_description = input('Please add a description of the task: '\n) 
+        task_description = task_description if task_description else None
+        # Due date
+        while True:
+            due_date = input('Please enter a due-date(format 30/09/23): '\n) 
+            #if validate_due_date_input(due_date):
+            break
+            #else:
+             #   print('Invalid date format. Please try agian.')
+        due_date = due_date if due_date else None
+        # Priority
+        while True:
+            priority = input('Please choose a priority number between 1-10, where 1 is top priority: '\n)# #TODO  add while loop to test input
+            if not priority:
+                priority = 10
+                print(f'The default value {priority} is set when you do not add a number.')
+                break
+            try:
+                # Convert input to integer
+                priority = int(priority)
+                if 1<= priority <=10:
+                    break
+                else:
+                    print('Invalid priority number. Please try again.')
+            # Error
+            except ValueError:
+                print('Invalid input. Please enter a valid number')
+    
+        task_data = [task_name, task_description, due_date, priority]
+        return task_data
+
 class TodoList:
     def __init__(self, task_handler, worksheet, worksheet_name):
         self.task_handler = task_handler
