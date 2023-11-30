@@ -171,3 +171,15 @@ class WorksheetHandler:
                 sys.exit()
             else:
                 return worksheet_name
+
+def main(): 
+    sheet = Sheet().sheet
+    worksheet_handler = WorksheetHandler(sheet)
+
+    worksheet_handler.start_worksheet_loop()
+
+    worksheet_name = input('Enter the name of the worksheet you would like to open: '\n) # TODO move user input to class UserInputHandler???
+    worksheet = worksheet_handler.open_worksheet(worksheet_name)
+
+if __name__ == '__main__':
+    main()
