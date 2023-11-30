@@ -274,6 +274,23 @@ class UserInputHandler:
         task_data = [task_name, task_description, due_date, priority]
         return task_data
 
+    def get_update_task_input(self):
+        print('To update a task, enter the new data. Press Enter to keep the existing data')
+
+        task_name = input(f'Current task name: {self.task.task_name}\nEnter new task name: \n')
+        task_name = task_name if task_name else self.task.task_name
+
+        description = input(f'Current description: {self.task.description}\nEnter new description: \n')
+        description = description if description else self.task.description
+
+        due_date = input(f'Current due date: {self.task.due_date}\nEnter new due date: \n')
+        due_date = due_date if due_date else self.task.due_date
+
+        priority = input(f'Current priority: {self.task.priority}\nEnter new priority: \n')
+        priority = priority if priority else self.task.priority
+
+        return [task_name, task_description, due_date, priority]
+
 class TodoList:
     def __init__(self, task_handler, worksheet, worksheet_name):
         self.task_handler = task_handler
