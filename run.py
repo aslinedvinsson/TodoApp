@@ -20,3 +20,22 @@ SHEET = GSPREAD_CLIENT.open('todo--app')
 test = SHEET.worksheet('test')
 data = test.get_all_values()
 print(data)
+
+
+class Sheet:
+    def __init__(self):
+        self.sheet = self.open_spreadsheet()
+
+    def open_spreadsheet(self):
+        """
+        Open the 'todo--app' spreadsheet.
+        Returns a tuple with opened spreadsheet.
+        """
+        try:
+            sheet = GSPREAD_CLIENT.open('todo--app')
+            print('Spreadsheet found')
+            return sheet
+        except gspread.exceptions.SpreadsheetNotFound as e:
+            print(f'Spreadsheet not found: {e}')
+            sys.exit()
+
