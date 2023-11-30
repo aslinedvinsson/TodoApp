@@ -81,6 +81,10 @@ class WorksheetHandler:
             sys.exit()
 
     def open_worksheet(self, worksheet_name):
+        """
+        Open a specific worksheet in Google Sheets. Argument is the name of 
+        the worksheet.
+        """
         try:
             worksheet = self.sheet.worksheet(worksheet_name)
             print(f'{worksheet_name} was opened')
@@ -90,6 +94,10 @@ class WorksheetHandler:
             sys.exit()
     
     def display_existing_worksheets(self):
+        """
+        Display the names of the existing worksheets. Prints a list of 
+        worksheets.
+        """
         try:
             worksheets = self.sheet.worksheets()
             worksheet_names = [worksheet.title for worksheet in worksheets]
@@ -101,6 +109,9 @@ class WorksheetHandler:
             sys.exit()
     
     def delete_worksheet(self, worksheet_name):
+        """
+        Delete a worksheet of the users choice.
+        """
         try:
             worksheet = self.sheet.worksheet(worksheet_name)
             self.sheet.del_worksheet(worksheet)
@@ -108,3 +119,55 @@ class WorksheetHandler:
         except gspread.exceptions.APIError as e:
             print(f'{e} error deliting worksheet')
             sys.exit()
+
+    def start_worksheet_loop(self):
+        """
+        A loop that displays different options for the user on what to do with 
+        the worksheets.
+        """
+        worksheet = None
+        
+        while True:
+            print('What would you like to do? Choose one option by entering a number. You can press q whenever you want to quit or get back to the start and make a new choice')
+            print('1. Create a new worksheet')
+            print('2. Open a specific worksheet')
+            print('3. Display a list of your current worksheets')
+            print('4. Delete a whole worksheet')
+            print('q. Quit')
+
+            worksheet_choice = input('Enter your choice: '\n)
+
+            if worksheet_choice == '1':
+                worksheet_name = self.get_worksheet_name()
+                self.create_worksheet(worksheet_name)
+                print(f'You entered {worksheet_name} as worksheet name')
+
+            elif worksheet_choice == '2':
+                worksheet_name = self.get_worksheet_name()
+                worksheet = self.open_worksheet(worksheet_name)
+                print(f'You opened {worksheet_name}')
+                
+            elif worksheet_choice == '3':
+                self.display_existing_worksheets()
+
+            elif worksheet_choice == '4':
+                worksheet_name = self.get_worksheet_name()
+                self.delete_worksheet(worksheet_name)
+
+            elif worksheet_choice.lower() == 'q':
+                print('Exiting the program')
+                sys.exit()
+            else:
+                print('Invalid choice. Please enter a valid choice')
+    
+    def get_worksheet_name(self):
+        """
+        Prompt the user to enter the name of a worksheet.
+        """
+         while True:
+            worksheet_name = input('Enter a worksheet name: '\n)
+            if worksheet_name.lower() == 'q':
+                print('Exiting the program')
+                sys.exit()
+            else:
+                return worksheet_name
