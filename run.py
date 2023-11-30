@@ -17,10 +17,6 @@ GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('todo--app')
 # End of section code from the Love Sandwich project
 
-test = SHEET.worksheet('test')
-data = test.get_all_values()
-print(data)
-
 
 class Sheet:
     def __init__(self):
@@ -33,7 +29,7 @@ class Sheet:
         """
         try:
             sheet = GSPREAD_CLIENT.open('todo--app')
-            print('Spreadsheet found')
+            #print('Spreadsheet found')
             return sheet
         except gspread.exceptions.SpreadsheetNotFound as e:
             print(f'Spreadsheet not found: {e}')
@@ -49,18 +45,15 @@ class WorksheetHandler:
         Argument is the name of the workshet.
         Returns the worksheet requested or None.
         """
-
         try:
             worksheets = self.sheet.worksheets()
-            
             for worksheet in worksheets:
                 if worksheet.title == worksheet_name:
                     print(f'{worksheet_name} was got')
                     return worksheet
-
+        except gspread.exceptions.WorksheetNotFound:
             print(f'Worksheet not found: {worksheet_name}')
             return None
-
         except gspread.exceptions.APIError as e:
             print(f'Error getting worksheet: {e}')
             return None
@@ -89,6 +82,9 @@ class WorksheetHandler:
             worksheet = self.sheet.worksheet(worksheet_name)
             print(f'{worksheet_name} was opened')
             return worksheet
+        except gspread.exceptions.WorksheetNotFound:
+            print(f'Worksheet not found: {worksheet_name}')
+            return None
         except gspread.exceptions.APIError as e:
             print(f'{e} error opening worksheet')
             sys.exit()
@@ -117,7 +113,7 @@ class WorksheetHandler:
             self.sheet.del_worksheet(worksheet)
             print(f'Worksheet {worksheet_name} was deleted.')
         except gspread.exceptions.APIError as e:
-            print(f'{e} error deliting worksheet')
+            print(f'{e} error deleting worksheet')
             sys.exit()
 
     def start_worksheet_loop(self):
@@ -145,7 +141,6 @@ class WorksheetHandler:
             elif worksheet_choice == '2':
                 worksheet_name = self.get_worksheet_name()
                 worksheet = self.open_worksheet(worksheet_name)
-                print(f'You opened {worksheet_name}')
                 
             elif worksheet_choice == '3':
                 self.display_existing_worksheets()
@@ -165,7 +160,7 @@ class WorksheetHandler:
         Prompt the user to enter the name of a worksheet.
         """
         while True:
-            worksheet_name = input('Enter a worksheet name: \n')
+            worksheet_name = input('Enter a worksheet name: \n').lower()
             if worksheet_name.lower() == 'q':
                 print('Exiting the program')
                 sys.exit()
@@ -178,7 +173,7 @@ def main():
 
     worksheet_handler.start_worksheet_loop()
 
-    worksheet_name = input('Enter the name of the worksheet you would like to open: \n') # TODO move user input to class UserInputHandler???
+    worksheet_name = input('Enter the name of the worksheet you would like to open: \n').lower() 
     worksheet = worksheet_handler.open_worksheet(worksheet_name)
 
 if __name__ == '__main__':
