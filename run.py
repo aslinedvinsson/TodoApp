@@ -88,3 +88,23 @@ class WorksheetHandler:
         except gspread.exceptions.APIError as e:
             print(f'{e} error opening worksheet')
             sys.exit()
+    
+    def display_existing_worksheets(self):
+        try:
+            worksheets = self.sheet.worksheets()
+            worksheet_names = [worksheet.title for worksheet in worksheets]
+            print('Your current worksheets:')
+            for name in worksheet_names:
+                print(name)
+        except gspread.exceptions.APIError as e:
+            print(f'{e} error displaying worksheets')
+            sys.exit()
+    
+    def delete_worksheet(self, worksheet_name):
+        try:
+            worksheet = self.sheet.worksheet(worksheet_name)
+            self.sheet.del_worksheet(worksheet)
+            print(f'Worksheet {worksheet_name} was deleted.')
+        except gspread.exceptions.APIError as e:
+            print(f'{e} error deliting worksheet')
+            sys.exit()
