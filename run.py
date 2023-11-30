@@ -104,17 +104,21 @@ class WorksheetHandler:
             print(f'{e} error displaying worksheets')
             sys.exit()
     
-    def delete_worksheet(self, worksheet_name):
+    def delete_worksheet(self, worksheet_delete):
         """
         Delete a worksheet of the users choice.
         """
         try:
-            worksheet = self.sheet.worksheet(worksheet_name)
+            worksheet = self.sheet.worksheet(worksheet_delete)
             self.sheet.del_worksheet(worksheet)
-            print(f'Worksheet {worksheet_name} was deleted.')
+            print(f'Worksheet {worksheet_delete} was deleted.')
+        except gspread.exceptions.WorksheetNotFound:
+            print(f'Worksheet not found: {worksheet_delete}')
+            return None
         except gspread.exceptions.APIError as e:
             print(f'{e} error deleting worksheet')
             sys.exit()
+    
 
     def start_worksheet_loop(self):
         """
@@ -128,7 +132,7 @@ class WorksheetHandler:
             print('1. Create a new worksheet')
             print('2. Open a specific worksheet')
             print('3. Display a list of your current worksheets')
-            print('4. Delete a whole worksheet')
+            print('4. Delete a whole worksheet. If you do NOT want to delete a worksheet, press q to exit the program.')
             print('q. Quit')
 
             worksheet_choice = input('Enter your choice: \n')
@@ -136,8 +140,7 @@ class WorksheetHandler:
             if worksheet_choice == '1':
                 worksheet_name = self.get_worksheet_name()
                 self.create_worksheet(worksheet_name)
-                print(f'You entered {worksheet_name} as worksheet name')
-
+                
             elif worksheet_choice == '2':
                 worksheet_name = self.get_worksheet_name()
                 worksheet = self.open_worksheet(worksheet_name)
@@ -146,8 +149,19 @@ class WorksheetHandler:
                 self.display_existing_worksheets()
 
             elif worksheet_choice == '4':
-                worksheet_name = self.get_worksheet_name()
-                self.delete_worksheet(worksheet_name)
+                while True:
+                    print('Are you sure you want to delete a worksheet? Once '\
+                    'you have deleted it, you can not get it back. If you do '\
+                    'NOT want to delete a worksheet, press q.')
+                    self.display_existing_worksheets()
+                    worksheet_delete = input('Enter the name of the worksheet '\
+                    'you would like to delete: \n').lower()
+                    if worksheet_delete.lower() == 'q':
+                        print('Exiting the program')
+                        sys.exit()
+                    else:
+                        self.delete_worksheet(worksheet_delete)
+                        break
 
             elif worksheet_choice.lower() == 'q':
                 print('Exiting the program')
