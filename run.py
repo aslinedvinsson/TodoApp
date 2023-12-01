@@ -106,7 +106,7 @@ class TaskHandler:
         self.worksheet.append_rows(updated_data)
         
     #def sort_tasks()
-
+    """
     def delete_task(self, task_name_to_delete):
         tasks = self.tasks
        # print('Before deletion:', tasks)
@@ -142,7 +142,7 @@ class TaskHandler:
         sys.exit()
     
     self.tasks = tasks
-
+    """
 class Sheet:
     def __init__(self):
         self.sheet = self.open_spreadsheet()
@@ -314,8 +314,9 @@ class WorksheetHandler:
                 return worksheet_name
 
 class UserInputHandler:
-    def __init__(self, task_handler):
+    def __init__(self, task_handler, task):
         self.task_handler = task_handler
+        self.task = task
 
     def display_and_select_task_to_update(self, worksheet):
         #tasks = self.task_handler.display_all_tasks()  
@@ -323,15 +324,22 @@ class UserInputHandler:
         if not tasks:
             print('No tasks available to update.')
             return None
-
         print('Select a task to update: ')
         for i, task in enumerate(tasks, start=1):
             print(f'{i}. {task.task_name}')
         try:
-            selected_task = tasks[task_name]
-            return selected_task
+            selected_task = input('Enter the name of the task you want to update: ')
+            if selected_task.lower() == 'q':
+                print('Exiting the program')
+                sys.exit()
+            else:
+                for task in tasks:
+                    if task.task_name == selected_task:
+                        return task
+            #selected_task = tasks[task_name]
+            #return selected_task
         except IndexError:
-            print('Invalid task name. Please enter a valid task name.')
+            print('Invalid task name. Please enter a valid task name.') #Add loop
            
     def get_add_task_input(self, worksheet):
         print('To add a task you have to enter a task name. All other information is optional to add. Just press Enter when you want to go to the next category.')
@@ -391,7 +399,7 @@ class UserInputHandler:
         task_data = [task_name, task_description, due_date, priority]
         return task_data
 
-    def get_update_task_input(self):
+    def get_update_task_input(self, task):
         print('To update a task, enter the new data. Press Enter to keep the existing data')
 
         task_name = input(f'Current task name: {self.task.task_name}\nEnter new task name: \n')
@@ -408,6 +416,7 @@ class UserInputHandler:
 
         return [task_name, task_description, due_date, priority]
     
+    """
     def get_delete_task_input(self):
         while True:
             print('Are you sure you want to delete a task? Once '\
@@ -423,13 +432,14 @@ class UserInputHandler:
                 self.task_handler.delete_task(task_delete)
                 return task_delete
                 break
-
+    """
 class TodoList:
     def __init__(self, task_handler, worksheet, worksheet_name):
         self.task_handler = task_handler
         self.worksheet = worksheet
         self.worksheet_name = worksheet_name
-        self.user_input_handler = UserInputHandler(self.task_handler)
+        self.task = None
+        self.user_input_handler = UserInputHandler(self.task_handler, self.task)
 
     def start(self): #TODO Can I eliminate this method?
         while True:
@@ -462,16 +472,16 @@ class TodoList:
         elif choice == 'b':
             self.task = self.user_input_handler.display_and_select_task_to_update(self.worksheet)
             if self.task:
-                new_data = self.user_input_handler.get_update_task_input()
+                new_data = self.user_input_handler.get_update_task_input(self.task)
                 self.task_handler.update_task(self.task, new_data)
             
         #elif choice == 'c':
         #   sort_tasks(worksheet)
-    
-        elif choice == 'd':
-            task_name_to_delete = self.user_input_handler.get_delete_task_input()
-            self.task_handler.delete_task(task_name_to_delete)
-                        
+        
+        #elif choice == 'd':
+            #task_name_to_delete = self.user_input_handler.get_delete_task_input()
+            #self.task_handler.delete_task(task_name_to_delete)
+                       
         elif choice == 'e':
             self.task_handler.display_all_tasks()
         
@@ -495,10 +505,10 @@ def main():
     user_input_handler = UserInputHandler(task_handler)
     task_data = user_input_handler.get_add_task_input(worksheet)
     task_handler.add_task(task_data, worksheet_name, worksheet)
-    task_name_to_delete = user_input_handler.get_delete_task_input(task_handler)
-    task_handler.delete_task(task_name_to_delete)
+    #task_name_to_delete = user_input_handler.get_delete_task_input(task_handler)
+   # task_handler.delete_task(task_name_to_delete)
     user_input_handler = UserInputHandler(task_handler)
-    todo_list = TodoList(task_handler, worksheet, worksheet_name)
+    todo_list = TodoList(self.task_handler, worksheet, worksheet_name)
     todo_list.start()
 if __name__ == '__main__':
     main()
