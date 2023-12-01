@@ -114,6 +114,7 @@ class Sheet:
 class WorksheetHandler:
     def __init__(self, sheet):
         self.sheet = sheet
+        self.task_handler = None
 
     def get_worksheet(self, worksheet_name):
         """
@@ -159,9 +160,12 @@ class WorksheetHandler:
             worksheet = self.sheet.worksheet(worksheet_name)
             print(f'{worksheet_name} was opened')
             self.task_handler = TaskHandler(worksheet)
+            todo_list = TodoList(self.task_handler, worksheet, worksheet_name)
+            todo_list.start()
             return worksheet
         except gspread.exceptions.WorksheetNotFound:
             print(f'Worksheet not found: {worksheet_name}')
+            self.start_worksheet_loop()
             return None
         except gspread.exceptions.APIError as e:
             print(f'{e} error opening worksheet')
@@ -224,8 +228,8 @@ class WorksheetHandler:
                 worksheet_name = self.get_worksheet_name()
                 worksheet = self.open_worksheet(worksheet_name)
                 #user_input_handler = UserInputHandler(self.task_handler)
-                todo_list = TodoList(self.task_handler, worksheet, worksheet_name)
-                todo_list.start()
+                #todo_list = TodoList(self.task_handler, worksheet, worksheet_name)
+                #todo_list.start()
                 
             elif worksheet_choice == '3':
                 self.display_existing_worksheets()
@@ -363,8 +367,9 @@ class TodoList:
         self.task_handler = task_handler
         self.worksheet = worksheet
         self.worksheet_name = worksheet_name
+        self.user_input_handler = UserInputHandler(self.task_handler)
 
-    def start(self):
+    def start(self): #TODO Can I eliminate this method?
         while True:
             self.display_choices_for_task()
             user_choice = self.get_user_choice()
@@ -385,17 +390,49 @@ class TodoList:
     def get_user_choice(self): # # TODO move user input to class UserInputHandler
         return input('Please, enter your choice: \n')
 
+    def handle_user_choice(self, choice):
+        task_index = None
+
+        if choice == 'a':
+            task_data = self.user_input_handler.get_add_task_input()
+            self.task_handler.add_task(task_data, self.worksheet_name)
+            
+        elif choice == 'b':
+            self.task = self.user_input_handler.display_and_select_task_to_update(self.worksheet)
+            if self.task:
+                new_data = self.user_input_handler.get_update_task_input()
+                self.task_handler.update_task(self.task, new_data)
+            
+        #elif choice == 'c':
+        #   sort_tasks(worksheet)
+    
+        elif choice == 'd':
+            self.task_handler.display_index_and_task_names()  # Display index and task names
+            task_index = self.user_input_handler.get_task_index()
+            self.task_handler.delete_task(task_index)  
+            
+        elif choice == 'e':
+            self.task_handler.display_all_tasks()
+        
+        elif choice == 'q':
+            print('Returning to worksheet menu')
+            return
+            
+        else:
+            print('Invalid choice. Please enter a valid choice')
+
 def main(): 
     sheet = Sheet().sheet
     worksheet_handler = WorksheetHandler(sheet)
-    task_handler = None
+    
     worksheet_handler.start_worksheet_loop()
 
     worksheet_name = input('Enter the name of the worksheet you would like to open: \n').lower() 
     worksheet = worksheet_handler.open_worksheet(worksheet_name)
-    task_handler = TaskHandler(worksheet)
+    task_handler = worksheet_handler.task_handler
+    #task_handler = TaskHandler(worksheet)
     user_input_handler = UserInputHandler(task_handler)
-    todo_list = TodoList(task_handler, worksheet, user_input_handler)
+    todo_list = TodoList(task_handler, worksheet, worksheet_name)
     todo_list.start()
 if __name__ == '__main__':
     main()
