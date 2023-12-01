@@ -56,6 +56,34 @@ class TaskHandler:
             # return tasks #return a list of tasks
             #print(f'{i}.{task.task_name}')
             print(f'Task: {task.task_name} Description: {task.description} Due Date: {task.due_date}, Priority: {task.priority}')
+    
+    def validate_due_date_input(self, due_date): 
+        """
+        Validate the format of the due date the user puts in.
+        Returns True if the date has a valid format, otherwise False.
+
+        The valid date format is 'DD/MM/YY':
+            - DD is a two-digit day (01-31),
+            - MM is a two-digit month (01-12), 
+            - YY is a two-digit year (23-99)
+        """
+        # Code taken from https://stackoverflow.com/questions/15491894/
+        # regex-to-validate-date-formats-dd-mm-yyyy-dd-mm-yyyy-dd-mm-
+        # yyyy-dd-mmm-yyyy
+        valid_due_date_input = re.compile(r'^(?:(?:31(\/|-|\.)' 
+                                r'(?:0?[13578]|1[02]))\1|'
+                                r'(?:(?:29|30)(\/|-|\.)'
+                                r'(?:0?[13-9]|1[0-2])\2))'
+                                r'(?:(?:1[6-9]|[2-9]\d)?\d{2})$|'
+                                r'^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?'
+                                r'(?:0[48]|[2468][048]|[13579][26])|'
+                                r'(?:(?:16|[2468][048]|[3579][26])00))))$|'
+                                r'^(?:0?[1-9]|1\d|2[0-8])'
+                                r'(\/|-|\.)'
+                                r'(?:(?:0?[1-9])|(?:1[0-2]))\4'
+                                r'(?:(?:1[6-9]|[2-9]\d)?\d{2})$')
+        return bool(due_date == '' or valid_due_date_input.match(due_date))
+
        
     def add_task(self, task_data, worksheet_name):
         self.worksheet.append_row([worksheet_name]+ task_data)
@@ -227,10 +255,7 @@ class WorksheetHandler:
             elif worksheet_choice == '2':
                 worksheet_name = self.get_worksheet_name()
                 worksheet = self.open_worksheet(worksheet_name)
-                #user_input_handler = UserInputHandler(self.task_handler)
-                #todo_list = TodoList(self.task_handler, worksheet, worksheet_name)
-                #todo_list.start()
-                
+                               
             elif worksheet_choice == '3':
                 self.display_existing_worksheets()
 
@@ -289,30 +314,47 @@ class UserInputHandler:
         except IndexError:
             print('Invalid task index. Please enter a valid index.')
            
-    def get_add_task_input(self):
+    def get_add_task_input(self, worksheet):
         print('To add a task you have to enter a task name. All other information is optional to add. Just press Enter when you want to go to the next category.')
-    # Task name
+        # Task name
         while True:
             task_name = input('Please add the name of the task: \n')
             if task_name == '':
                 print('Please add a name of the task you would like to add.')
+            elif task_name.lower() == 'q':
+                print('Exiting the program')
+                sys.exit()
             else:
                 break
         # Task description
-        task_description = input('Please add a description of the task: \n') 
-        task_description = task_description if task_description else None
+        while True:
+            task_description = input('Please add a description of the task: \n') 
+            if task_description.lower() == 'q':
+                print('Exiting the program')
+                sys.exit()
+            else:
+                task_description = task_description if task_description else None
+                break
         # Due date
         while True:
-            due_date = input('Please enter a due-date(format 30/09/23): \n') 
-            #if validate_due_date_input(due_date):
-            break
-            #else:
-             #   print('Invalid date format. Please try agian.')
-        due_date = due_date if due_date else None
+            due_date = input('Please enter a due-date(format dd/mm/yy): \n') 
+            task_handler = TaskHandler(worksheet)
+            if due_date.lower() == 'q':
+                print('Exiting the program')
+                sys.exit()
+            valid_due_date_input = task_handler.validate_due_date_input(due_date)
+            if valid_due_date_input:
+                break
+            else:
+                print('Invalid date format. Please try agian.')
+            due_date = due_date if due_date else None
         # Priority
         while True:
             priority = input('Please choose a priority number between 1-10, where 1 is top priority: \n')# #TODO  add while loop to test input
-            if not priority:
+            if priority.lower() == 'q':
+                print('Exiting the program')
+                sys.exit()
+            elif not priority:
                 priority = 10
                 print(f'The default value {priority} is set when you do not add a number.')
                 break
@@ -394,7 +436,7 @@ class TodoList:
         task_index = None
 
         if choice == 'a':
-            task_data = self.user_input_handler.get_add_task_input()
+            task_data = self.user_input_handler.get_add_task_input(self.worksheet)
             self.task_handler.add_task(task_data, self.worksheet_name)
             
         elif choice == 'b':
@@ -431,6 +473,8 @@ def main():
     worksheet = worksheet_handler.open_worksheet(worksheet_name)
     task_handler = worksheet_handler.task_handler
     #task_handler = TaskHandler(worksheet)
+    task_data = user_input_handler.get_add_task_input(worksheet)
+    task_handler.add_task(task_data, worksheet_name, worksheet)
     user_input_handler = UserInputHandler(task_handler)
     todo_list = TodoList(task_handler, worksheet, worksheet_name)
     todo_list.start()
