@@ -413,11 +413,11 @@ class TodoList:
     def start(self): #TODO Can I eliminate this method?
         while True:
             self.display_choices_for_task()
-            user_choice = self.get_user_choice()
+            #user_choice = self.get_user_choice()
             if user_choice.lower() == 'q':
                 print('Exiting the program')
                 break
-            self.handle_user_choice(user_choice)
+            #self.handle_user_choice(user_choice)
 
     def display_choices_for_task(self):
         print('What would you like to do? Choose one option by entering a letter. You can press q whenever you want quit or get back start and make a new choice')
@@ -428,7 +428,9 @@ class TodoList:
         print('e. View current tasks') # #TODO add if q under
         print('q. Quit')
 
-        self.user_input_handler.get_user_choice_for_task()
+        #self.user_input_handler.get_user_choice_for_task()
+        user_choice = self.user_input_handler.get_user_choice_for_task()
+        self.handle_user_choice(user_choice)
 
     def handle_user_choice(self, choice):
         #task_index = None
@@ -471,7 +473,7 @@ def main():
     task_handler = worksheet_handler.task_handler
   
     user_input_handler = UserInputHandler(worksheet_handler, task_handler)
-    task_data = user_input_handler.get_add_task_input(worksheet)
+    #task_data = user_input_handler.get_add_task_input(worksheet)
     task_handler.add_task(task_data, worksheet_name, worksheet)
   
     
