@@ -190,6 +190,11 @@ class WorksheetHandler:
         Returns the new worksheet.
         """
         try:
+            existing_worksheets = self.sheet.worksheets()
+            for existing_worksheet in existing_worksheets:
+                if existing_worksheet.title == worksheet_name:
+                    print(f'Worksheet {worksheet_name} already exist. Chose another name for the worksheet.')
+                    return None
             worksheet = self.sheet.add_worksheet(title = worksheet_name, rows = '20', cols= '10')
             worksheet.row_values(1)
             worksheet.insert_row(['todo_title', 'task_name', 'description', 'due_date', 'priority', 'color'], 1)
@@ -198,7 +203,9 @@ class WorksheetHandler:
             return worksheet
         except gspread.exceptions.APIError as e:
             print(f'Error creating worksheet: {e}')
-            sys.exit()
+            print('Going back to main menu')
+            self.start_worksheet_loop()
+            return None
 
     def open_worksheet(self, worksheet_name):
         """
@@ -289,8 +296,9 @@ class WorksheetHandler:
                     worksheet_delete = input('Enter the name of the worksheet '\
                     'you would like to delete: \n').lower()
                     if worksheet_delete.lower() == 'q':
-                        print('Exiting the program')
-                        sys.exit()
+                        print('Going back to main menu')
+                        self.start_worksheet_loop()
+                        return None
                     else:
                         self.delete_worksheet(worksheet_delete)
                         break
@@ -308,8 +316,9 @@ class WorksheetHandler:
         while True:
             worksheet_name = input('Enter a worksheet name: \n').lower()
             if worksheet_name.lower() == 'q':
-                print('Exiting the program')
-                sys.exit()
+                print('Going back to main menu')
+                self.start_worksheet_loop()
+                return None
             else:
                 return worksheet_name
 
@@ -330,14 +339,13 @@ class UserInputHandler:
         try:
             selected_task = input('Enter the name of the task you want to update: ')
             if selected_task.lower() == 'q':
-                print('Exiting the program')
-                sys.exit()
+                print('Going back to main menu')
+                self.start_worksheet_loop()
+                return None
             else:
                 for task in tasks:
                     if task.task_name == selected_task:
                         return task
-            #selected_task = tasks[task_name]
-            #return selected_task
         except IndexError:
             print('Invalid task name. Please enter a valid task name.') #Add loop
            
