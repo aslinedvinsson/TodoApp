@@ -98,10 +98,10 @@ class TaskHandler:
     def update_task(self, task, new_data):
         self.worksheet.append_row(new_data)
         updated_data = []
-        for task in tasks:
+        for task in self.tasks:
             row = [self.worksheet.title, task.task_name, task.description, task.due_date, task.priority]
             updated_data.append(row)
-        for i, task in enumerate(tasks):
+        for i, task in enumerate(self.tasks):
             updated_data[i] = [self.worksheet.title, task.task_name, task.description, task.due_date, task.priority]
         # Clear the content of the worksheet
         self.worksheet.clear()
@@ -112,16 +112,18 @@ class TaskHandler:
         
     #def sort_tasks()
 
-    def delete_task(self, task_name_to_delete): #TODO add try except error message
-        row_to_delete = self.user_input_handler.get_delete_task_input(task_name_to_delete)
-        print(f'{row_to_delete}')
-        self.user_input_handler.delete_row(row_to_delete)
-        print(f'Task {task_name_to_delete} was deleted.')
-        #print('Going back to main menu')
-        #self.worksheet_handler.start_worksheet_loop()
+    def delete_task(self, row_to_delete_input): #TODO add try except error message
+        tasks = self.tasks
+        deleted_task = None
+        for i, task in enumerate(tasks):
+            if task.task_name.lower() == row_to_delete_input.lower():
+                deleted_task = tasks.pop(i)        
+                print(f'Task {row_to_delete_input} was deleted.')
+                self.update_task(task, [])
+                break
+        if self.delete_task is None: 
+            print(f'Task {row_to_delete_input} was not found.')
         return None
-        
-
   
 class Sheet:
     def __init__(self):
@@ -144,7 +146,7 @@ class WorksheetHandler:
     def __init__(self, sheet):
         self.sheet = sheet
         self.task_handler = None
-        self.user_input_handler = UserInputHandler(self, None, None)
+        self.user_input_handler = UserInputHandler(self, self.task_handler, None)
 
     def get_worksheet(self, worksheet_name):
         """
@@ -364,7 +366,7 @@ class UserInputHandler:
         # Due date
         while True:
             due_date = input('Please enter a due-date(format dd/mm/yy): \n') 
-            task_handler = TaskHandler(worksheet)
+            task_handler = TaskHandler(worksheet, UserInputHandler)
             if due_date.lower() == 'q':
                 print('Exiting the program')
                 sys.exit()
@@ -421,23 +423,34 @@ class UserInputHandler:
         'NOT want to delete a task, press q.')
         self.task_handler.display_all_tasks()     
         while True:
-            delete_task_input = input('Enter the name of the task '\
+            row_to_delete_input = input('Enter the name of the task '\
             'you would like to delete: \n').lower()
-            if delete_task_input == '':
+            if row_to_delete_input == '':
                 print('Please enter the name of the task you want to delete. If you do NOT want to delete a task, press q.')
-            elif delete_task_input.lower() == 'q':
+            elif row_to_delete_input.lower() == 'q':
                 print('Going back to main menu')
                 self.start_worksheet_loop()
                 return None
-            elif delete_task_input.lower() not in [task.task_name for task in self.task_handler.tasks]: 
-                print('Can not find the taskname. Please try another task name. If you do NOT want to delete a task, press q.')
             else:
-                print('reached else')
-                self.task_handler.delete_task(delete_task_input)
-                print('delete_task method is called')
-                break
-        print('delete_task_input returned')
-        return delete_task_input
+                found_task = False
+                for task in self.task_handler.tasks:
+                    if task.task_name.lower() == row_to_delete_input:
+                        found_task = True
+                        break
+                if not found_task:
+                    print('Cant find task name.Please try agian')
+
+
+
+            #elif row_to_delete_input.lower() not in [task.task_name.lower() for task in self.task_handler.tasks]: 
+             #   print('Can not find the taskname. Please try another task name. If you do NOT want to delete a task, press q.')
+                else:
+                    print('reached else')
+                    self.task_handler.delete_task(row_to_delete_input)
+                    print('delete_task method is called')
+                    break
+        print('row_to_delete_input returned')
+        return row_to_delete_input
                 
   
 class TodoList:
@@ -488,8 +501,8 @@ class TodoList:
         
         elif choice == 'd':
             #self.user_input_handler.get_delete_task_input()
-            task_name_to_delete = self.user_input_handler.get_delete_task_input(self.worksheet)
-            self.task_handler.delete_task(task_name_to_delete)       
+            task_to_delete = self.user_input_handler.get_delete_task_input(self.worksheet)
+            self.task_handler.delete_task(task_to_delete)       
         elif choice == 'e':
             self.task_handler.display_all_tasks()
         elif choice == 'q':
@@ -508,12 +521,12 @@ def main():
     worksheet = worksheet_handler.open_worksheet(worksheet_name)
     task_handler = worksheet_handler.task_handler
   
-    user_input_handler = UserInputHandler(worksheet_handler, task_handler)
+    user_input_handler = UserInputHandler(worksheet_handler, task_handler, None)
     task_data = user_input_handler.get_add_task_input(worksheet)
     task_handler.add_task(task_data, worksheet_name, worksheet)
   
     
-    todo_list = TodoList(self.task_handler, worksheet, worksheet_name)
+    todo_list = TodoList(user_input_handler, task_handler, worksheet, worksheet_name)
     todo_list.start()
 if __name__ == '__main__':
     main()
