@@ -33,10 +33,11 @@ class Task:
         #self.tasks = tasks
 
 class TaskHandler:
-    def __init__(self, worksheet):
+    def __init__(self, worksheet, user_input_handler):
         self.worksheet = worksheet
         if self.worksheet:
             self.load_tasks()
+        self.user_input_handler = user_input_handler
 
     def load_tasks(self):
         if self.worksheet:
@@ -110,6 +111,17 @@ class TaskHandler:
         self.worksheet.append_rows(updated_data)
         
     #def sort_tasks()
+
+    def delete_task(self, task_name_to_delete): #TODO add try except error message
+        row_to_delete = self.user_input_handler.get_delete_task_input(task_name_to_delete)
+        print(f'{row_to_delete}')
+        self.user_input_handler.delete_row(row_to_delete)
+        print(f'Task {task_name_to_delete} was deleted.')
+        #print('Going back to main menu')
+        #self.worksheet_handler.start_worksheet_loop()
+        return None
+        
+
   
 class Sheet:
     def __init__(self):
@@ -132,6 +144,7 @@ class WorksheetHandler:
     def __init__(self, sheet):
         self.sheet = sheet
         self.task_handler = None
+        self.user_input_handler = UserInputHandler(self, None, None)
 
     def get_worksheet(self, worksheet_name):
         """
@@ -184,10 +197,12 @@ class WorksheetHandler:
         try:
             worksheet = self.sheet.worksheet(worksheet_name)
             print(f'{worksheet_name} was opened')
-            self.task_handler = TaskHandler(worksheet)
+            self.task_handler = TaskHandler(worksheet, self.user_input_handler)
+            self.user_input_handler.task_handler = self.task_handler
             #Creating a default Task instance
-            user_input_handler = UserInputHandler(self, self.task_handler, Task('', '', '', 10)) 
-            todo_list = TodoList(user_input_handler, self.task_handler, worksheet, worksheet_name)
+            self.user_input_handler = UserInputHandler(self, self.task_handler, Task('', '', '', 10))
+            self.task_handler.load_tasks()
+            todo_list = TodoList(self.user_input_handler, self.task_handler, worksheet, worksheet_name)
             todo_list.display_choices_for_task()
             return worksheet
         except gspread.exceptions.WorksheetNotFound:
@@ -400,6 +415,30 @@ class UserInputHandler:
 
         return [task_name, task_description, due_date, priority]
     
+    def get_delete_task_input(self, worksheet):
+        print('Are you sure you want to delete a task? Once '\
+        'you have deleted it, you can not get it back. If you do '\
+        'NOT want to delete a task, press q.')
+        self.task_handler.display_all_tasks()     
+        while True:
+            delete_task_input = input('Enter the name of the task '\
+            'you would like to delete: \n').lower()
+            if delete_task_input == '':
+                print('Please enter the name of the task you want to delete. If you do NOT want to delete a task, press q.')
+            elif delete_task_input.lower() == 'q':
+                print('Going back to main menu')
+                self.start_worksheet_loop()
+                return None
+            elif delete_task_input.lower() not in [task.task_name for task in self.task_handler.tasks]: 
+                print('Can not find the taskname. Please try another task name. If you do NOT want to delete a task, press q.')
+            else:
+                print('reached else')
+                self.task_handler.delete_task(delete_task_input)
+                print('delete_task method is called')
+                break
+        print('delete_task_input returned')
+        return delete_task_input
+                
   
 class TodoList:
     def __init__(self, user_input_handler, task_handler, worksheet, worksheet_name):
@@ -437,8 +476,7 @@ class TodoList:
 
         if choice == 'a':
             task_data = self.user_input_handler.get_add_task_input(self.worksheet)
-            self.task_handler.add_task(task_data, self.worksheet_name)
-            
+            self.task_handler.add_task(task_data, self.worksheet_name)   
         elif choice == 'b':
             self.task = self.user_input_handler.display_and_select_task_to_update(self.worksheet)
             if self.task:
@@ -448,19 +486,17 @@ class TodoList:
         #elif choice == 'c':
         #   sort_tasks(worksheet)
         
-        #elif choice == 'd':
-            #task_name_to_delete = self.user_input_handler.get_delete_task_input()
-            #self.task_handler.delete_task(task_name_to_delete)
-                       
+        elif choice == 'd':
+            #self.user_input_handler.get_delete_task_input()
+            task_name_to_delete = self.user_input_handler.get_delete_task_input(self.worksheet)
+            self.task_handler.delete_task(task_name_to_delete)       
         elif choice == 'e':
             self.task_handler.display_all_tasks()
-        
         elif choice == 'q':
             print('Returning to worksheet menu')
             return
-            
         else:
-            print('Invalid choice. Please enter a valid choice')
+            print('Invalid choice. Please enter a valid choice') #TODO add loop to make a valid choice
 
 def main(): 
     sheet = Sheet().sheet
@@ -473,7 +509,7 @@ def main():
     task_handler = worksheet_handler.task_handler
   
     user_input_handler = UserInputHandler(worksheet_handler, task_handler)
-    #task_data = user_input_handler.get_add_task_input(worksheet)
+    task_data = user_input_handler.get_add_task_input(worksheet)
     task_handler.add_task(task_data, worksheet_name, worksheet)
   
     
