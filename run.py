@@ -1,5 +1,5 @@
 import sys # sys module to run the function sys.exit()
-import re # hänvisa källa
+import re # hänvisa källa eller ta bort?
 from datetime import datetime 
 import gspread
 from google.oauth2.service_account import Credentials
@@ -31,12 +31,18 @@ class Task:
         self.description = description
         self.due_date = due_date
         self.priority = priority
-        #self.tasks = tasks
+        
 
 class TaskHandler:
+    """
+    Class for handling tasks by using a worksheet and the class for 
+    user input 
+    """
     def __init__(self, worksheet, user_input_handler):
         self.worksheet = worksheet
         if self.worksheet:
+            #When worksheet is provided the load_tasks method loads all tasks
+            #in that worksheet
             self.load_tasks()
         self.user_input_handler = user_input_handler
 
@@ -54,6 +60,9 @@ class TaskHandler:
         if not self.tasks:
            print('No tasks available.')
            return []
+           #Loop with enumerate function to get both the index and the task 
+           #with all the information about the task, starting index from 1 
+           #instead of 0 to be more logical to the user
         for i, task in enumerate(self.tasks, start = 1):
             print(f'Task: {task.task_name} Description: {task.description} Due Date: {task.due_date}, Priority: {task.priority}')
         return self.tasks
@@ -66,23 +75,12 @@ class TaskHandler:
         The valid date format is 'DD/MM/YY':
             - DD is a two-digit day (01-31),
             - MM is a two-digit month (01-12), 
-            - YY is a two-digit year (23-99)
+            - YY is a two-digit year 00-99)
         """
         # Code taken from https://stackoverflow.com/questions/15491894/
         # regex-to-validate-date-formats-dd-mm-yyyy-dd-mm-yyyy-dd-mm-
         # yyyy-dd-mmm-yyyy
-        valid_due_date_input = re.compile(r'^(?:(?:31(\/|-|\.)' 
-                                r'(?:0?[13578]|1[02]))\1|'
-                                r'(?:(?:29|30)(\/|-|\.)'
-                                r'(?:0?[13-9]|1[0-2])\2))'
-                                r'(?:(?:1[6-9]|[2-9]\d)?\d{2})$|'
-                                r'^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?'
-                                r'(?:0[48]|[2468][048]|[13579][26])|'
-                                r'(?:(?:16|[2468][048]|[3579][26])00))))$|'
-                                r'^(?:0?[1-9]|1\d|2[0-8])'
-                                r'(\/|-|\.)'
-                                r'(?:(?:0?[1-9])|(?:1[0-2]))\4'
-                                r'(?:(?:1[6-9]|[2-9]\d)?\d{2})$')
+        valid_due_date_input = re.compile(r'^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$')
         return bool(due_date == '' or valid_due_date_input.match(due_date))
 
        
@@ -103,6 +101,7 @@ class TaskHandler:
         if task_to_update is None:
             print(f'Task {task_name} not found.')
             return
+        self.update_worksheet_data()
         print(f'Current Task: {task_to_update.task_name}')
         new_task_name = input('Enter a new task name (press Enter to keep current): ')
         task_to_update.task_name = new_task_name if new_task_name else task_to_update.task_name
@@ -138,19 +137,48 @@ class TaskHandler:
             self.worksheet.append_row(row)
 
         
-    #def sort_tasks()
+    def sort_tasks(self):
+        """
+        Sort tasks in the current worksheet based on the users choice.
+        The function prompts the user to choose between:
+        - sort by task name 
+        - sort by due date
+        - sort by priority
+        The function then sorts the tasks and update the worksheet.
+        """
+        print('How would you like to sort your tasks?')
+        print('1. Sort by task name (alphabetical order)')
+        print('2. Sort by due date (The earliest date on the top of the todo_list)')
+        print('3. Sort by priority number (1 on the top of the todo-list.)')
+        choice = input('Enter the number of the sorting method you choose: ')
+        tasks = self.worksheet.get_all_values()[1:] # Skip first row with categorie names
+        if choice == '1':
+            sorted_tasks = sorted(tasks, key = lambda x: x[1])
+        elif choice == '2':
+            sorted_tasks = sorted(tasks, key = lambda x: datetime.strptime( x[3], '%d/%m/%y') if x[3] else datetime.max)
+        elif choice == '3':
+            sorted_tasks = sorted(tasks, key = lambda x: int(x[4]))
+        else:
+            print('Invalid choice. Please try agian.')
+            return
+        # Empty existing data in the worksheet
+        self.worksheet.clear()
+        self.worksheet.append_row(['todo_title', 'task', 'task_description', 'due_date', 'priority', 'color'])
+        for task in sorted_tasks:
+            self.worksheet.append_row(task)
+        print('The tasks are sorted')
+
 
     def delete_task(self, row_to_delete_input): #TODO add try except error message
-        tasks = self.tasks
         deleted_task = None
-        for i, task in enumerate(tasks):
+        for i, task in enumerate(self.tasks):
             if task.task_name.lower() == row_to_delete_input.lower():
-                deleted_task = tasks.pop(i)        
+                deleted_task = self.tasks.pop(i)        
                 print(f'Task {row_to_delete_input} was deleted.')
-                self.update_task(task, [])
                 break
         if deleted_task is None: 
             print(f'Task {row_to_delete_input} was not found.')
+        self.update_worksheet_data()
         return None
   
 class Sheet:
@@ -164,7 +192,6 @@ class Sheet:
         """
         try:
             sheet = GSPREAD_CLIENT.open('todo--app')
-            #print('Spreadsheet found')
             return sheet
         except gspread.exceptions.SpreadsheetNotFound as e:
             print(f'Spreadsheet not found: {e}')
@@ -210,7 +237,7 @@ class WorksheetHandler:
             worksheet.row_values(1)
             worksheet.insert_row(['todo_title', 'task_name', 'description', 'due_date', 'priority', 'color'], 1)
             print(f'Worksheet {worksheet_name} was created')
-            self.task_handler = TaskHandler(worksheet)
+            self.task_handler = TaskHandler(worksheet, self.user_input_handler)
             return worksheet
         except gspread.exceptions.APIError as e:
             print(f'Error creating worksheet: {e}')
@@ -291,7 +318,7 @@ class WorksheetHandler:
             if worksheet_choice == '1':
                 worksheet_name = self.get_worksheet_name()
                 self.create_worksheet(worksheet_name)
-                self.task_handler = TaskHandler(worksheet)   
+                self.task_handler = TaskHandler(worksheet, self.user_input_handler)   
             elif worksheet_choice == '2':
                 worksheet_name = self.get_worksheet_name()
                 worksheet = self.open_worksheet(worksheet_name)                   
@@ -461,10 +488,8 @@ class TodoList:
             self.task_handler.display_all_tasks()
             task_name_to_update = input('Enter the name of the task you would like to update: ')
             self.task_handler.update_task(task_name_to_update)
-           
-        #elif choice == 'c':
-        #   sort_tasks(worksheet)
-        
+        elif choice == 'c':
+            self.task_handler.sort_tasks()
         elif choice == 'd':
             task_to_delete = self.user_input_handler.get_delete_task_input(self.worksheet)
             self.task_handler.delete_task(task_to_delete)       
