@@ -270,8 +270,8 @@ class WorksheetHandler:
     def __init__(self, sheet):
         self.sheet = sheet
         self.task_handler = None
-        self.user_input_handler = UserInputHandler(self, self.task_handler, \
-        None)
+        self.user_input_handler = UserInputHandler(self, None)
+        self.worksheet_handler = self
 
     def get_worksheet(self, worksheet_name):
         """
@@ -329,11 +329,10 @@ class WorksheetHandler:
             self.task_handler = TaskHandler(worksheet, self.user_input_handler)
             self.user_input_handler.task_handler = self.task_handler
             #Creating a default Task instance
-            self.user_input_handler = UserInputHandler(self, self.task_handler,\
-            Task('', '', '', 10))
+            self.user_input_handler = UserInputHandler(self, self.task_handler)
             self.task_handler.load_tasks()
             todo_list = TodoList(self.user_input_handler, self.task_handler, \
-            worksheet, worksheet_name)
+            self.worksheet_handler, worksheet, worksheet_name)
             todo_list.display_choices_for_task()
             return worksheet
         except gspread.exceptions.WorksheetNotFound:
@@ -432,7 +431,7 @@ class WorksheetHandler:
             else:
                 print('Invalid choice. Please enter a valid choice')
             if worksheet and task_handler:
-                user_input_handler = UserInputHandler(self, task_handler, None)
+                user_input_handler = UserInputHandler(self, task_handler)
                 task_data = user_input_handler.get_add_task_input(worksheet)
                 task_handler.add_task(task_data, worksheet_name)
 
@@ -471,7 +470,10 @@ class UserInputHandler:
         information is optional to add. Just press Enter when you want to go \
         to the next category.')
         task_name = self.get_user_input('Please add the name of the task: \n')
-        if task_name is None:
+        if task_name.lower() == 'q':
+            print('Going back to main menu')
+            self.worksheet_handler.start_worksheet_loop()
+        elif task_name is None:
             return None
         description = self.get_user_input('Please add a description of the task: \n') 
         if description is None:
@@ -557,10 +559,11 @@ class TodoList:
     """
     Class representing a todo list.
     """
-    def __init__(self, user_input_handler, task_handler, worksheet, \
+    def __init__(self, user_input_handler, task_handler, worksheet_handler, worksheet, \
     worksheet_name):
         self.user_input_handler = user_input_handler
         self.task_handler = task_handler
+        self.worksheet_handler = worksheet_handler
         self.worksheet = worksheet
         self.worksheet_name = worksheet_name
 
@@ -604,6 +607,9 @@ class TodoList:
                 self.task_handler.display_all_tasks()
                 task_name_to_update = input('Please enter the name of the task you would \
                 like to update: ')
+                if task_name_to_update == 'q':
+                    print('Going back to main menu')
+                    self.worksheet_handler.start_worksheet_loop()
                 self.task_handler.update_task(task_name_to_update)
                 break
             elif choice == 'c':
@@ -611,6 +617,9 @@ class TodoList:
                 break
             elif choice == 'd':
                 task_to_delete = self.user_input_handler.get_delete_task_input()
+                if task_to_delete == 'q':
+                    print('Going back to main menu')
+                    self.worksheet_handler.start_worksheet_loop()
                 self.task_handler.delete_task(task_to_delete)   
                 break    
             elif choice == 'e':
@@ -632,13 +641,6 @@ def main():
     sheet = Sheet().sheet
     worksheet_handler = WorksheetHandler(sheet)
     worksheet_handler.start_worksheet_loop()
-    #worksheet_name = input('Please enter the name of the worksheet you would like to \
-    #open: \n').lower() #Todo how eliminate this one
-    #worksheet = worksheet_handler.open_worksheet(worksheet_name)
-    #task_handler = worksheet_handler.task_handler
-    #user_input_handler = UserInputHandler(worksheet_handler, task_handler, None)
-    #task_data = user_input_handler.get_add_task_input(worksheet)
-    #task_handler.add_task(task_data, worksheet_name)
 
 if __name__ == '__main__':
     main()
