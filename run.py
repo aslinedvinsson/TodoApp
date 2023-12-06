@@ -1,4 +1,3 @@
-import re # hänvisa källa eller ta bort?
 from datetime import datetime
 import gspread
 from google.oauth2.service_account import Credentials
@@ -90,9 +89,10 @@ class TaskHandler:
         |[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$\
         |^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1\
         [6-9]|[2-9]\d)?\d{2})$')
-        return bool(due_date == '' or valid_due_date_input.match(due_date))
+        if not valid_due_date_input.match(due_date):
+            raise ValueError('Invalid date format. Please use dd/mm/yy format')
+        #return bool(due_date == '' or valid_due_date_input.match(due_date))
 
-       
     def add_task(self, task_data, worksheet_name):
         """
         Add a task to a opened worksheet.
@@ -255,6 +255,11 @@ class Sheet:
             print('Going back to main menu')
             self.worksheet_handler.start_worksheet_loop()
             return None
+        except gspread.exception.APIError as e:
+            print(f'{e} error opening spreadsheet')
+            print('Going back to main menu')
+            self.worksheet_handler.start_worksheet_loop()
+            return None
 
 class WorksheetHandler:
     """
@@ -278,7 +283,6 @@ class WorksheetHandler:
                 if worksheet.title == worksheet_name:
                     print(f'{worksheet_name} was got')
                     return worksheet
-        except gspread.exceptions.WorksheetNotFound:
             print(f'Worksheet not found: {worksheet_name}')
             return None
         except gspread.exceptions.APIError as e:
@@ -332,6 +336,7 @@ class WorksheetHandler:
             return worksheet
         except gspread.exceptions.WorksheetNotFound:
             print(f'Worksheet not found: {worksheet_name}')
+            print('Going back to main menu')
             self.start_worksheet_loop()
             return None
         except gspread.exceptions.APIError as e:
@@ -440,10 +445,9 @@ class UserInputHandler:
     """
     Class for handling user input
     """
-    def __init__(self, worksheet_handler, task_handler, task):
+    def __init__(self, worksheet_handler, task_handler):
         self.worksheet_handler = worksheet_handler
         self.task_handler = task_handler
-        self.task = task
     
     def get_user_choice_for_task(self): 
         return input('Please, enter your choice: \n')
@@ -458,15 +462,12 @@ class UserInputHandler:
         print('To add a task you have to enter a task name. All other \
         information is optional to add. Just press Enter when you want to go \
         to the next category.')
-        # Task name
         task_name = self.get_user_input('Please add the name of the task: \n')
         if task_name is None:
             return None
-        # Task description
         description = self.get_user_input('Please add a description of the task: \n') 
         if description is None:
             return None
-        # Due date
         due_date = self.get_user_input('Please enter a due-date(format dd/mm/yy): \n') 
         if due_date is None:
             return None
@@ -475,7 +476,6 @@ class UserInputHandler:
         if not valid_due_date_input:
                 print('Invalid date format. Please try agian.')
                 return None
-        # Priority
         priority_valid = False
         priority = self.get_user_input('Please choose a priority number between 1-10, \
         where 1 is top priority: \n')
@@ -505,7 +505,11 @@ class UserInputHandler:
             print('Going back to main menu')
             self.worksheet_handler.start_worksheet_loop()
             return None
-        return user_input if user_input else None
+        elif not user_input:
+            print('Please enter a valid input of press q to go back to the \
+            main menu')
+            return None
+        return user_input
     
     def get_delete_task_input(self):
         """
@@ -551,15 +555,6 @@ class TodoList:
         self.task_handler = task_handler
         self.worksheet = worksheet
         self.worksheet_name = worksheet_name
-
-    """     
-    def start(self): #TODO Can I eliminate this method?
-        while True:
-            self.display_choices_for_task()
-            if user_choice.lower() == 'q':
-                print('Exiting the program')
-                break
-    """
 
     def display_choices_for_task(self):
         """
@@ -618,7 +613,6 @@ def main():
     The main function of the program. It initialixes objects, handles user input
     and manages workflow of the program
     """
-
     sheet = Sheet().sheet
     worksheet_handler = WorksheetHandler(sheet)
     worksheet_handler.start_worksheet_loop()
@@ -629,9 +623,6 @@ def main():
     user_input_handler = UserInputHandler(worksheet_handler, task_handler, None)
     task_data = user_input_handler.get_add_task_input(worksheet)
     task_handler.add_task(task_data, worksheet_name)
-    #todo_list = TodoList(user_input_handler, task_handler, worksheet, \
-    #worksheet_name)
-    #todo_list.start()#Todo eliminate this on
 
 if __name__ == '__main__':
     main()
