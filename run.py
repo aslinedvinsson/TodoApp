@@ -1,4 +1,11 @@
+"""
+This module contains the implementation of a todo-app. The user can create, open,
+delete and view todo-lists. Inside of every todo-list the user can add, update, 
+sort, delete and view tasks. 
+""" 
+
 from datetime import datetime
+import re
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -45,9 +52,12 @@ class TaskHandler:
         self.user_input_handler = user_input_handler
 
     def load_tasks(self):
+        """
+        Method to load tasks from a worksheet into the variable 'tasks'
+        """
         if self.worksheet:
             data = self.worksheet.get_all_values()
-            header_row = data[0]
+            #header_row = data[0]
             self.tasks = []
             for row in data[1:]:
                 task = Task(row[1], row[2], row[3], row[4])
@@ -91,7 +101,6 @@ class TaskHandler:
         [6-9]|[2-9]\d)?\d{2})$')
         if not valid_due_date_input.match(due_date):
             raise ValueError('Invalid date format. Please use dd/mm/yy format')
-        #return bool(due_date == '' or valid_due_date_input.match(due_date))
 
     def add_task(self, task_data, worksheet_name):
         """
@@ -101,20 +110,21 @@ class TaskHandler:
         - Task description
         - Due date
         - Priority number between 1-10
-        - Task color (Not yet implemented code)
         The method uses input validation and adds default value 10 if no 
         priority number is given by the user.
         The method calls the update_worksheet_data method.
         """
-        try:
-            if self.worksheet:
+        if self.worksheet:
+            try:
                 self.worksheet.append_row([worksheet_name] + task_data)
-                print(f'Task added to {worksheet_name}')
+                print(f'Task added to worksheet {worksheet_name}')
                 self.load_tasks()
-            else:
-                print('Task was not added')
-        except gspread.exceptions.APIError as e:
-            print(f'{e} error adding task')
+                data = self.worksheet.get_all_values()
+                print(f'ws data {data}')
+            except Exception as e:
+                print(f'{e} error')
+        else:
+            print('Task was not added.')
             print('Going back to the main menu')
             self.worksheet_handler.start_worksheet_loop()
 
@@ -122,10 +132,10 @@ class TaskHandler:
         """
         Update information for a selected task in the current worksheet.
         The method prompts user to update information for a selected task.
-        The method displays the current information for the user and let the user 
-        update information in the categories they want to update. If the user do not 
-        want to update a specific category, the user press Enter to go to the next 
-        category.
+        The method displays the current information for the user and let 
+        the user update information in the categories they want to update. 
+        If the user do not want to update a specific category, the user press 
+        Enter to go to the next category.
         """
         task_to_update = None
         for task in self.tasks:
@@ -211,7 +221,7 @@ class TaskHandler:
         # Empty existing data in the worksheet
         self.worksheet.clear()
         self.worksheet.append_row(['todo_title', 'task', 'task_description',\
-        'due_date', 'priority', 'color'])
+        'due_date', 'priority'])
         for task in sorted_tasks:
             self.worksheet.append_row(task)
         print('The tasks are sorted')
@@ -307,7 +317,7 @@ class WorksheetHandler:
             rows = '20', cols= '10')
             worksheet.row_values(1)
             worksheet.insert_row(['todo_title', 'task_name', 'description', \
-            'due_date', 'priority', 'color'], 1)
+            'due_date', 'priority'], 1)
             print(f'Worksheet {worksheet_name} was created')
             self.task_handler = TaskHandler(worksheet, self.user_input_handler)
             return worksheet
@@ -459,57 +469,64 @@ class UserInputHandler:
     def get_user_choice_for_task(self): 
         return input('Please, enter your choice: \n')
 
-    def get_add_task_input(self, task_data, worksheet_name):
+    #def get_add_task_input(self, task_data, worksheet_name):
+    def get_add_task_input(self, task_data):
         """
         Method to prompt the user to enter information to add a new task. The 
         user is asked to enter information on task name, description, due date 
         and priority. Only task name is mandatory for the user to enter. If the
         user at any time press q, they exit and return to the main menu. 
         """
-        print('To add a task you have to enter a task name. All other \
-        information is optional to add. Just press Enter when you want to go \
-        to the next category.')
-        task_name = self.get_user_input('Please add the name of the task: \n')
-        if task_name.lower() == 'q':
-            print('Going back to main menu')
-            self.worksheet_handler.start_worksheet_loop()
-        elif task_name is None:
-            return None
-        description = self.get_user_input('Please add a description of the task: \n') 
-        if description is None:
-            return None
-        due_date = self.get_user_input('Please enter a due-date(format dd/mm/yy): \n') 
-        if due_date is None:
-            return None
-        valid_due_date_input = self.task_handler.validate_due_date_input\
-        (due_date)
-        if not valid_due_date_input:
-            print('Invalid date format. Please try agian.')
-            return None
-        priority_valid = False
-        priority = self.get_user_input('Please choose a priority number between 1-10, \
-        where 1 is top priority: \n')
-        if priority is None:
-            return None
-        elif not priority:
-            priority = 10
-            print(f'The default value {priority} is set when you do not \
-            add a number.')
-        else:
-            try:
-                # Convert input to integer
-                priority = int(priority)
-                if 1<= priority <=10:
-                    priority_valid = True
-                else:
-                    print('Invalid priority number. Please try again.')
-            except ValueError:
-                print('Invalid input. Please enter a valid number')
-                return None
+        while True: 
+            print('To add a task you have to enter a task name. All other \
+            information is optional to add. Just press Enter when you want to go \
+            to the next category.')
+            task_name = self.get_user_input('Please add the name of the task: \n')
+            if task_name.lower() == 'q':
+                print('Going back to main menu')
+                self.worksheet_handler.start_worksheet_loop()
+            elif task_name is None:
+                return []
+            description = self.get_user_input('Please add a description of the task: \n') 
+            if description is None:
+                return []
+            while True:
+                due_date = self.get_user_input('Please enter a due-date(format dd/mm/yy): \n')
+                try:
+                    self.task_handler.validate_due_date_input(due_date)
+                    break
+                except ValueError as e:
+                    print(f'{e} error')
+                if due_date.lower() == 'q':
+                    print('Going back to main menu')
+                    self.worksheet_handler.start_worksheet_loop()
+                    break
+            priority = self.get_user_input('Please choose a priority number between 1-10, \
+            where 1 is top priority: \n')
+            if priority is None:
+                return []
+            elif not priority:
+                priority = 10
+                print(f'The default value {priority} is set when you do not \
+                add a number.')
+            else:
+                try:
+                    # Convert input to integer
+                    priority = int(priority)
+                    if 1<= priority <=10:
+                        return []
+                    else:
+                        print('Invalid priority number. Please try again.')
+                except ValueError:
+                    print('Invalid input. Please enter a valid number')
+                    return []
         task_data = [task_name, description, due_date, priority]
         return task_data
     
     def get_user_input(self, prompt):
+        """
+        Method to get user input with prompt.
+        """
         user_input = input(prompt)
         if user_input.lower() == 'q':
             print('Going back to main menu')
@@ -600,7 +617,7 @@ class TodoList:
         while True:
             if choice == 'a':
                 task_data = self.user_input_handler.get_add_task_input\
-                (self.worksheet, self.worksheet_name)
+                (self)
                 self.task_handler.add_task(task_data, self.worksheet_name)   
                 break
             elif choice == 'b':
