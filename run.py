@@ -56,6 +56,9 @@ class TaskHandler:
                 self.tasks.append(task)
 
     def display_all_tasks(self):
+        """
+        Retrives all tasks from the worksheet and display a list of them to the user.
+        """
         self.load_tasks()
         if not self.tasks:
            print('No tasks available.')
@@ -85,6 +88,18 @@ class TaskHandler:
 
        
     def add_task(self, task_data, worksheet_name):
+        """
+        Add a task to a opened worksheet.
+        The method prompts user to enter information about 
+        - Task name (mandatory)
+        - Task description
+        - Due date
+        - Priority number between 1-10
+        - Task color (Not yet implemented code)
+        The method uses input validation and adds default value 10 if no priority 
+        number is given by the user.
+        The method calls the update_worksheet_data method.
+        """
         if self.worksheet:
             self.worksheet.append_row([worksheet_name]+ task_data)
             print(f'Task added to worksheet {worksheet_name}')
@@ -93,6 +108,14 @@ class TaskHandler:
             print('Task was not added.')
 
     def update_task(self, task_name):
+        """
+        Update information for a selected task in the current worksheet.
+        The method prompts user to update information for a selected task.
+        The method displays the current information for the user and let the user 
+        update information in the categories they want to update. If the user do not 
+        want to update a specific category, the user press Enter to go to the next 
+        category.
+        """
         task_to_update = None
         for task in self.tasks:
             if task.task_name.lower() == task_name.lower():
@@ -140,11 +163,11 @@ class TaskHandler:
     def sort_tasks(self):
         """
         Sort tasks in the current worksheet based on the users choice.
-        The function prompts the user to choose between:
+        The method prompts the user to choose between:
         - sort by task name 
         - sort by due date
         - sort by priority
-        The function then sorts the tasks and update the worksheet.
+        The method then sorts the tasks and update the worksheet.
         """
         print('How would you like to sort your tasks?')
         print('1. Sort by task name (alphabetical order)')
@@ -170,6 +193,11 @@ class TaskHandler:
 
 
     def delete_task(self, row_to_delete_input): #TODO add try except error message
+        """
+        Delete the task the user selects from the current worksheet.
+        The method deletes the corresponding row to the task from the worksheet.
+        The user can abort the action by pressing q. 
+        """
         deleted_task = None
         for i, task in enumerate(self.tasks):
             if task.task_name.lower() == row_to_delete_input.lower():
@@ -198,6 +226,9 @@ class Sheet:
             sys.exit()
 
 class WorksheetHandler:
+    """
+    Class for handling worksheets.
+    """
     def __init__(self, sheet):
         self.sheet = sheet
         self.task_handler = None
@@ -359,6 +390,9 @@ class WorksheetHandler:
                 return worksheet_name
 
 class UserInputHandler:
+    """
+    Class for handling user input
+    """
     def __init__(self, worksheet_handler, task_handler, task):
         self.worksheet_handler = worksheet_handler
         self.task_handler = task_handler
@@ -368,6 +402,12 @@ class UserInputHandler:
         return input('Please, enter your choice: \n')
 
     def get_add_task_input(self, worksheet):
+        """
+        Method to prompt the user to enter information to add a new task. The 
+        user is asked to enter information on task name, description, due date 
+        and priority. Only task name is mandatory for the user to enter. If the
+        user at any time press q, they exit and return to the main menu. 
+        """
         print('To add a task you have to enter a task name. All other information is optional to add. Just press Enter when you want to go to the next category.')
         # Task name
         while True:
@@ -427,6 +467,11 @@ class UserInputHandler:
         return task_data
     
     def get_delete_task_input(self, worksheet):
+        """
+        Method to prompt the user to enter the name of the task they want to 
+        delete. The user can exit by pressing q and then return to main menu 
+        without executing the deletion.
+        """
         print('Are you sure you want to delete a task? Once '\
         'you have deleted it, you can not get it back. If you do '\
         'NOT want to delete a task, press q.')
@@ -455,6 +500,9 @@ class UserInputHandler:
                 
   
 class TodoList:
+    """
+    Class representing a todo list.
+    """
     def __init__(self, user_input_handler, task_handler, worksheet, worksheet_name):
         self.user_input_handler = user_input_handler
         self.task_handler = task_handler
@@ -469,6 +517,17 @@ class TodoList:
                 break
 
     def display_choices_for_task(self):
+        """
+        Method to display a number of choices to manage a task. The user is prompt to make 
+        a choice by enter the letter of the action they want to perform. 
+        The choices are:
+        - add task
+        - update task
+        - sort task
+        - delete task
+        - quit
+        Depending on the users choice other methods are called.
+        """
         print('What would you like to do? Choose one option by entering a letter. You can press q whenever you want quit or get back start and make a new choice')
         print('a. Add task')
         print('b. Update task') # #TODO add if q under
@@ -481,6 +540,9 @@ class TodoList:
         self.handle_user_choice(user_choice)
 
     def handle_user_choice(self, choice):
+        """
+        Method to handle the user's choice for action in the todo list.
+        """
         if choice == 'a':
             task_data = self.user_input_handler.get_add_task_input(self.worksheet)
             self.task_handler.add_task(task_data, self.worksheet_name)   
