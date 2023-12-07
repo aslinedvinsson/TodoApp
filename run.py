@@ -395,6 +395,10 @@ class WorksheetHandler:
         A loop that displays different options for the user on what to do with 
         the worksheets.
         """
+        print("Welcome to your Todo App! Let's turn your tasks into "
+        "accomplishments. Get started by creating your first list and adding"
+        " tasks.\n")
+        
         worksheet = None
         task_handler = None
         user_input_handler = None
