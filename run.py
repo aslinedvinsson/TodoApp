@@ -281,6 +281,7 @@ class WorksheetHandler:
     """
     def __init__(self, sheet):
         self.sheet = sheet
+        self.worksheet_handler = None
         self.task_handler = None
         self.user_input_handler = UserInputHandler(self, self.task_handler, \
         None)
@@ -322,7 +323,7 @@ class WorksheetHandler:
             worksheet.insert_row(['todo_title', 'task_name', 'description', \
             'due_date', 'priority'], 1)
             print(f'Worksheet {worksheet_name} was created')
-            self.task_handler = TaskHandler(worksheet, self.user_input_handler)
+            self.task_handler = TaskHandler(worksheet, self.worksheet_handler, self.user_input_handler)
             return worksheet
         except gspread.exceptions.APIError as e:
             print(f'Error creating worksheet: {e}')
@@ -398,6 +399,7 @@ class WorksheetHandler:
         A loop that displays different options for the user on what to do with 
         the worksheets.
         """
+        
         worksheet = None
         while True:
             print()
@@ -415,8 +417,8 @@ class WorksheetHandler:
             if worksheet_choice == '1':
                 worksheet_name = self.get_worksheet_name()
                 self.create_worksheet(worksheet_name)
-                self.task_handler = TaskHandler(worksheet, \
-                self.user_input_handler)   
+                worksheet_handler = WorksheetHandler(self.sheet)
+                self.task_handler = TaskHandler(worksheet, worksheet_handler, self.user_input_handler)   
             elif worksheet_choice == '2':
                 worksheet_name = self.get_worksheet_name()
                 worksheet_handler = WorksheetHandler(sheet)
