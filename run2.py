@@ -44,12 +44,13 @@ class TaskHandler:
     """
     def __init__(self, worksheet, worksheet_handler, user_input_handler):
         self.worksheet_handler = worksheet_handler
+        self.user_input_handler = user_input_handler
         self.worksheet = worksheet
         if self.worksheet:
             #When worksheet is provided the load_tasks method loads all tasks
             #in that worksheet
             self.load_tasks()
-        self.user_input_handler = user_input_handler
+     
 
     def load_tasks(self):
         if self.worksheet:
@@ -95,7 +96,7 @@ class TaskHandler:
         return bool(due_date == '' or valid_due_date_input.match(due_date))
 
        
-    def add_task(self, task_data, worksheet_name):
+    def add_task(self, task_data, worksheet_name, worksheet):
         """
         Add a task to a opened worksheet.
         The method prompts user to enter information about 
@@ -118,6 +119,8 @@ class TaskHandler:
             print(f'{e} error adding task')
             print('Going back to the main menu')
             self.worksheet_handler.start_worksheet_loop()
+        print('Going back to the main menu')
+        self.worksheet_handler.start_worksheet_loop()
 
     def update_task(self, task_name):
         """
@@ -466,7 +469,7 @@ class UserInputHandler:
         while True:
             print()
             due_date = input('Please enter a due-date(format dd/mm/yy): \n') 
-            task_handler = TaskHandler(worksheet, UserInputHandler)
+            task_handler = TaskHandler(worksheet, self.worksheet_handler, self)
             if due_date.lower() == 'q':
                 print('Going back to main menu')
                 self.worksheet_handler.start_worksheet_loop()
@@ -476,10 +479,11 @@ class UserInputHandler:
                 break
             else:
                 print('Invalid date format. Please try agian.')
-            due_date = due_date if due_date else None
+        due_date = due_date if due_date else None
         while True:
             print()
             priority = input('Please choose a priority number between 1-10, where 1 is top priority: \n')# #TODO  add while loop to test input
+            task_handler = TaskHandler(worksheet, self.worksheet_handler, self)
             if priority.lower() == 'q':
                 print('Going back to main menu')
                 self.worksheet_handler.start_worksheet_loop()
