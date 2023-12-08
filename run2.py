@@ -64,6 +64,7 @@ class TaskHandler:
         """
         Retrives all tasks from the worksheet and display a list of them to the user.
         """
+        print()
         self.load_tasks()
         if not self.tasks:
            print('No tasks available.')
@@ -74,6 +75,7 @@ class TaskHandler:
         for i, task in enumerate(self.tasks, start = 1):
             print(f'Task: {task.task_name} Description: {task.description} Due Date: {task.due_date}, Priority: {task.priority}')
         return self.tasks
+        print()
 
     def validate_due_date_input(self, due_date): 
         """
@@ -115,7 +117,6 @@ class TaskHandler:
             print(f'{e} error adding task')
             print('Going back to the main menu')
             self.worksheet_handler.start_worksheet_loop()
-
     def update_task(self, task_name):
         """
         Update information for a selected task in the current worksheet.
@@ -167,7 +168,6 @@ class TaskHandler:
         for task in self.tasks:
             row = [self.worksheet.title, task.task_name, task.description, task.due_date, task.priority]
             self.worksheet.append_row(row)
-
         
     def sort_tasks(self):
         """
@@ -296,21 +296,24 @@ class WorksheetHandler:
             print(f'{worksheet_name} was opened')
             self.task_handler = TaskHandler(worksheet, self.user_input_handler)
             self.user_input_handler.task_handler = self.task_handler
+            #self.task_handler.load_tasks()
             #Creating a default Task instance
             self.user_input_handler = UserInputHandler(self, self.task_handler, Task('', '', '', 10))
+            #self.user_input_handler.task_handler = self.task_handler
             self.task_handler.load_tasks()
             todo_list = TodoList(self.user_input_handler, self.task_handler, worksheet, worksheet_name)
             todo_list.display_choices_for_task()
             return worksheet
         except gspread.exceptions.WorksheetNotFound:
             print(f'Worksheet not found: {worksheet_name}')
-            self.worksheet_handler.start_worksheet_loop()
+            self.start_worksheet_loop()
             return None
         except gspread.exceptions.APIError as e:
             print(f'{e} error opening worksheet')
             print('Going back to main menu')
             self.start_worksheet_loop()
             return None
+
     
     def display_existing_worksheets(self):
         """
@@ -354,6 +357,7 @@ class WorksheetHandler:
         """
         worksheet = None
         while True:
+            print()
             print('What would you like to do? Choose one option by entering a number. You can press q whenever you want to quit or get back to the start and make a new choice')
             print('1. Create a new worksheet')
             print('2. Open a specific worksheet')
@@ -361,6 +365,7 @@ class WorksheetHandler:
             print('4. Delete a whole worksheet. If you do NOT want to delete a worksheet, press q to exit the program.')
             print('q. Quit')
             worksheet_choice = input('Enter your choice: \n')
+            print()
             if worksheet_choice == '1':
                 worksheet_name = self.get_worksheet_name()
                 self.create_worksheet(worksheet_name)
@@ -387,7 +392,7 @@ class WorksheetHandler:
                         break
             elif worksheet_choice.lower() == 'q':
                 print('Going back to main menu')
-                self.worksheet_handler.start_worksheet_loop()
+                self.start_worksheet_loop()
                 return None
             else:
                 print('Invalid choice. Please enter a valid choice')
@@ -424,6 +429,7 @@ class UserInputHandler:
         and priority. Only task name is mandatory for the user to enter. If the
         user at any time press q, they exit and return to the main menu. 
         """
+        print()
         print('To add a task you have to enter a task name. All other information is optional to add. Just press Enter when you want to go to the next category.')
         # Task name
         while True:
@@ -438,21 +444,23 @@ class UserInputHandler:
                 break
         # Task description
         while True:
+            print()
             description = input('Please add a description of the task: \n') 
             if description.lower() == 'q':
                 print('Going back to main menu')
-                self.start_worksheet_loop()
+                self.worksheet_handler.start_worksheet_loop()
                 return None
             else:
                 description = description if description else None
                 break
         # Due date
         while True:
+            print()
             due_date = input('Please enter a due-date(format dd/mm/yy): \n') 
             task_handler = TaskHandler(worksheet, UserInputHandler)
             if due_date.lower() == 'q':
                 print('Going back to main menu')
-                self.start_worksheet_loop()
+                self.worksheet_handler.start_worksheet_loop()
                 return None
             valid_due_date_input = task_handler.validate_due_date_input(due_date)
             if valid_due_date_input:
@@ -462,10 +470,11 @@ class UserInputHandler:
             due_date = due_date if due_date else None
         # Priority
         while True:
+            print()
             priority = input('Please choose a priority number between 1-10, where 1 is top priority: \n')# #TODO  add while loop to test input
             if priority.lower() == 'q':
                 print('Going back to main menu')
-                self.start_worksheet_loop()
+                self.worksheet_handler.start_worksheet_loop()
                 return None
             elif not priority:
                 priority = 10
@@ -491,15 +500,16 @@ class UserInputHandler:
         delete. The user can exit by pressing q and then return to main menu 
         without executing the deletion.
         """
-        print('Are you sure you want to delete a task? Once '\
-        'you have deleted it, you can not get it back. If you do '\
+        print('Are you sure you want to delete a task? Once '
+        'you have deleted it, you can not get it back. If you do '
         'NOT want to delete a task, press q.')
         self.task_handler.display_all_tasks()     
         while True:
-            row_to_delete_input = input('Enter the name of the task '\
+            row_to_delete_input = input('Enter the name of the task '
             'you would like to delete: \n').lower()
             if row_to_delete_input == '':
-                print('Please enter the name of the task you want to delete. If you do NOT want to delete a task, press q.')
+                print('Please enter the name of the task you want to delete.'
+                ' If you do NOT want to delete a task, press q.')
             elif row_to_delete_input.lower() == 'q':
                 print('Going back to main menu')
                 self.worksheet_handler.start_worksheet_loop()
@@ -512,11 +522,12 @@ class UserInputHandler:
                         break
                 if not found_task:
                     print('Cant find task name.Please try agian')
+                    print()
                 else:
                     self.task_handler.delete_task(row_to_delete_input)
                     break
         return row_to_delete_input
-                
+    
   
 class TodoList:
     """
@@ -525,6 +536,7 @@ class TodoList:
     def __init__(self, user_input_handler, task_handler, worksheet, worksheet_name):
         self.user_input_handler = user_input_handler
         self.task_handler = task_handler
+        #self.worksheet_handler = worksheet_handler
         self.worksheet = worksheet
         self.worksheet_name = worksheet_name
         
@@ -547,6 +559,7 @@ class TodoList:
         - quit
         Depending on the users choice other methods are called.
         """
+        print()
         print('What would you like to do? Choose one option by entering a letter. You can press q whenever you want quit or get back start and make a new choice')
         print('a. Add task')
         print('b. Update task') # #TODO add if q under
@@ -582,6 +595,8 @@ class TodoList:
         else:
             print('Invalid choice. Please enter a valid choice') #TODO add loop to make a valid choice
 
+                
+
 def main(): 
     sheet = Sheet().sheet
     worksheet_handler = WorksheetHandler(sheet)
@@ -593,7 +608,7 @@ def main():
     task_data = user_input_handler.get_add_task_input(worksheet)
     task_handler.add_task(task_data, worksheet_name, worksheet)
     todo_list = TodoList(user_input_handler, task_handler, worksheet, worksheet_name)
-    todo_list.start()#Todo eliminate this on
+    #todo_list.start()#Todo eliminate this on
 
 if __name__ == '__main__':
     main()
