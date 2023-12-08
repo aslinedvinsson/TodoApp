@@ -572,25 +572,27 @@ class TodoList:
         """
         Method to handle the user's choice for action in the todo list.
         """
-        if choice == 'a':
-            task_data = self.user_input_handler.get_add_task_input(self.worksheet)
-            self.task_handler.add_task(task_data, self.worksheet_name, self.worksheet)   
-        elif choice == 'b':
-            self.task_handler.display_all_tasks()
-            task_name_to_update = input('Enter the name of the task you would like to update: ')
-            self.task_handler.update_task(task_name_to_update)
-        elif choice == 'c':
-            self.task_handler.sort_tasks()
-        elif choice == 'd':
-            task_to_delete = self.user_input_handler.get_delete_task_input(self.worksheet)
-            self.task_handler.delete_task(task_to_delete)       
-        elif choice == 'e':
-            self.task_handler.display_all_tasks()
-        elif choice == 'q':
-            print('Returning to worksheet menu')
-            return
-        else:
-            print('Invalid choice. Please enter a valid choice') #TODO add loop to make a valid choice
+        while True:
+            if choice == 'a':
+                task_data = self.user_input_handler.get_add_task_input(self.worksheet)
+                self.task_handler.add_task(task_data, self.worksheet_name, self.worksheet)   
+            elif choice == 'b':
+                self.task_handler.display_all_tasks()
+                task_name_to_update = input('Enter the name of the task you would like to update: ')
+                self.task_handler.update_task(task_name_to_update)
+            elif choice == 'c':
+                self.task_handler.sort_tasks()
+            elif choice == 'd':
+                task_to_delete = self.user_input_handler.get_delete_task_input(self.worksheet)
+                self.task_handler.delete_task(task_to_delete)       
+            elif choice == 'e':
+                self.task_handler.display_all_tasks()
+            elif choice == 'q':
+                print('Returning to worksheet menu')
+                return
+            else:
+                print('Invalid choice. Please enter a valid choice') 
+                choice = input('Please enter your choice again: ')
 
                 
 
