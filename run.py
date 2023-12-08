@@ -69,8 +69,9 @@ class TaskHandler:
         print()
         self.load_tasks()
         if not self.tasks:
-           print('No tasks available.')
-           return []
+            print('No tasks available.')
+            print('Going back to the main menu')
+            self.worksheet_handler.start_worksheet_loop()
            #Loop with enumerate function to get both the index and the task 
            #with all the information about the task, starting index from 1 
            #instead of 0 to be more logical to the user
@@ -122,8 +123,6 @@ class TaskHandler:
                 print('Task was not added')
         except gspread.exceptions.APIError as e:
             print(f'{e} error adding task')
-            print('Going back to the main menu')
-            self.worksheet_handler.start_worksheet_loop()
         print('Going back to the main menu')
         self.worksheet_handler.start_worksheet_loop()
 
@@ -421,8 +420,8 @@ class WorksheetHandler:
                 self.task_handler = TaskHandler(worksheet, worksheet_handler, self.user_input_handler)   
             elif worksheet_choice == '2':
                 worksheet_name = self.get_worksheet_name()
-                worksheet_handler = WorksheetHandler(sheet)
-                worksheet = self.open_worksheet(worksheet_name)                   
+                worksheet_handler = WorksheetHandler(self.sheet)
+                worksheet = worksheet_handler.open_worksheet(worksheet_name, worksheet_handler)                   
             elif worksheet_choice == '3':
                 self.display_existing_worksheets()
             elif worksheet_choice == '4':
