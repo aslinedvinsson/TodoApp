@@ -220,7 +220,7 @@ class TaskHandler:
             self.worksheet.append_row(task)
         print('The tasks are sorted')
 
-    def delete_task(self, row_to_delete_input): #TODO add try except error message
+    def delete_task(self, row_to_delete_input): 
         """
         Delete the task the user selects from the current worksheet.
         The method deletes the corresponding row to the task from the worksheet.
@@ -232,9 +232,8 @@ class TaskHandler:
                 deleted_task = self.tasks.pop(i)        
                 print(f'Task {row_to_delete_input} was deleted.')
                 break
-        if deleted_task is None: 
-            print(f'Task {row_to_delete_input} was not found.')
         self.update_worksheet_data()
+        self.worksheet_handler.start_worksheet_loop()  
         return None
   
 class Sheet:
