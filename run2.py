@@ -603,13 +603,6 @@ def main():
     sheet = Sheet().sheet
     worksheet_handler = WorksheetHandler(sheet)
     worksheet_handler.start_worksheet_loop()
-    worksheet_name = input('Enter the name of the worksheet you would like to open: \n').lower() #Todo how eliminate this one
-    worksheet = worksheet_handler.open_worksheet(worksheet_name)
-    task_handler = worksheet_handler.task_handler
-    user_input_handler = UserInputHandler(worksheet_handler, task_handler, None)
-    task_data = user_input_handler.get_add_task_input(worksheet)
-    task_handler.add_task(task_data, worksheet_name, worksheet)
-    todo_list = TodoList(user_input_handler, task_handler, worksheet, worksheet_name)
 
 if __name__ == '__main__':
     main()
