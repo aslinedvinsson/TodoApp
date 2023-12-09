@@ -9,7 +9,6 @@ import re
 import gspread
 from google.oauth2.service_account import Credentials
 
-
 # Section of code taken from the Love Sandwich project
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -52,7 +51,6 @@ class TaskHandler:
             #in that worksheet
             self.load_tasks()
 
-
     def load_tasks(self):
         """
         Method loads tasks from the worksheet and creates Task instances for
@@ -89,21 +87,15 @@ class TaskHandler:
         """
         Validate the format of the due date the user puts in.
         Returns True if the date has a valid format, otherwise False.
-
         The valid date format is 'DD/MM/YY':
             - DD is a two-digit day (01-31),
             - MM is a two-digit month (01-12),
             - YY is a two-digit year 00-99)
         """
-        # Code taken from https://stackoverflow.com/questions/15491894/
-        # regex-to-validate-date-formats-dd-mm-yyyy-dd-mm-yyyy-dd-mm-
-        # yyyy-dd-mmm-yyyy
-        valid_due_date_input = re.compile(r'^(?:(?:31(\/|-|\.)(?:0?[13578]\
-        |1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]\
-        |[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]\
-        |[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$\
-        |^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:\
-        (?:1[6-9]|[2-9]\d)?\d{2})$')
+        # Code taken from https://www.freecodecamp.org/news/regex-for-date-
+        #formats-what-is-the-regular-expression-for-matching-dates/
+        valid_due_date_input = re.compile(r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]\
+        |1[0-2])/\d{2}$')
         return bool(due_date == '' or valid_due_date_input.match(due_date))
 
     def add_task(self, task_data, worksheet_name):
@@ -142,49 +134,42 @@ class TaskHandler:
         """
         task_to_update = next((task for task in self.tasks if \
         task.task_name.lower() == task_name.lower()), None)
+
         if task_to_update is not None:
             print(f'Current Task: {task_to_update.task_name}')
-            if task_to_update.task_name.lower() == 'q':
-                print()
-                print('Going back to the main menu')
-                self.worksheet_handler.start_worksheet_loop()
-            else:
-                self.update_worksheet_data()
-            new_task_name = input('Please enter a new task name (press Enter to'
-            ' keep current): ')
-            if new_task_name.lower() == 'q':
-                print()
-                print('Going back to the main menu')
-                self.worksheet_handler.start_worksheet_loop()
+
+            new_task_name = self.user_input_handler.get_update_task_input\
+            ('Please enter a new task name', task_to_update.task_name)
+            if self.user_input_handler.handle_exit_condition(new_task_name):
+                return
             task_to_update.task_name = new_task_name if new_task_name else \
             task_to_update.task_name
+
             print(f'Current Description: {task_to_update.description}')
-            new_description = input('Please enter updated description (press'
-            ' Enter to keep current): ')
-            if new_description.lower() == 'q':
-                print()
-                print('Going back to the main menu')
-                self.worksheet_handler.start_worksheet_loop()
+            new_description = self.user_input_handler.get_update_task_input\
+            ('Please enter updated description', task_to_update.description)
+            if self.user_input_handler.handle_exit_condition(new_description):
+                return
             task_to_update.description = new_description if new_description \
             else task_to_update.description
+
             print(f'Current Due Date: {task_to_update.due_date}')
-            new_due_date = input('Please nter updated due date '
-            '(format dd/mm/yy, press Enter to keep current): ')
-            if new_due_date.lower() == 'q':
-                print('Going back to the main menu')
-                self.worksheet_handler.start_worksheet_loop()
+            new_due_date = self.user_input_handler.get_update_task_input\
+            ('Please enter updated due date (format dd/mm/yy)', \
+            task_to_update.due_date)
+            if self.user_input_handler.handle_exit_condition(new_due_date):
+                return
             if self.validate_due_date_input(new_due_date):
-                task_to_update.due_date = new_due_date if new_due_date else \
-                task_to_update.due_date
+                task_to_update.due_date = new_due_date if new_due_date else\
+                 task_to_update.due_date
             else:
                 print('Invalid date format. Task due date remains unchanged.')
+
             print(f'Current Priority: {task_to_update.priority}')
-            new_priority = input('Please enter updated priority (press Enter '
-            'to keep current): ')
-            if new_priority.lower() == 'q':
-                print()
-                print('Going back to the main menu')
-                self.worksheet_handler.start_worksheet_loop()
+            new_priority = self.user_input_handler.get_update_task_input\
+            ('Please enter updated priority ', task_to_update.priority)
+            if self.user_input_handler.handle_exit_condition(new_priority):
+                return
             if new_priority:
                 try:
                     new_priority = int(new_priority)
@@ -194,12 +179,14 @@ class TaskHandler:
                         print('Invalid priority number. Task priority '
                         'remains unchanged.')
                 except ValueError:
-                    print('Invalid input. Priority should be a number.'
+                    print('Invalid input. Priority should be a number. '
                     'Task priority remains unchanged.')
+
             print(f'Task {task_to_update.task_name} updated successfully.')
             self.update_worksheet_data()
         else:
             print(f'Task {task_name} not found.')
+
         if self.worksheet_handler:
             self.worksheet_handler.start_worksheet_loop()
 
@@ -266,8 +253,8 @@ class TaskHandler:
     def delete_task(self, row_to_delete_input):
         """
         Delete the task the user selects from the current worksheet.
-        The method deletes the corresponding row to the task from the worksheet.
-        The user can abort the action by pressing q.
+        The method deletes the corresponding row to the task from the
+        worksheet.The user can abort the action by pressing q.
         """
         for i, task in enumerate(self.tasks):
             if task.task_name.lower() == row_to_delete_input.lower():
@@ -442,7 +429,8 @@ class WorksheetHandler:
             elif worksheet_choice == '2':
                 worksheet_name = self.get_worksheet_name()
                 worksheet_handler = WorksheetHandler(self.sheet)
-                worksheet = worksheet_handler.open_worksheet(worksheet_name, worksheet_handler)
+                worksheet = worksheet_handler.open_worksheet(worksheet_name, \
+                worksheet_handler)
             elif worksheet_choice == '3':
                 self.display_existing_worksheets()
             elif worksheet_choice == '4':
@@ -569,6 +557,25 @@ class UserInputHandler:
         task_data = [task_name, description, due_date, priority]
         return task_data
 
+    def get_update_task_input(self, prompt):
+        """
+        The method get user input to update a task, press Enter to keep current
+        information or press 'q' to go back to main menu
+        """
+        user_input = input (f'{prompt} (press Enter to keep current '
+        'information, or press q to go back to main menu): ')
+        return user_input
+
+    def handle_exit_condition(self, user_input):
+        """
+        The method handles the exit condition if user enter 'q'
+        """
+        if user_input.lower() == 'q':
+            print('Going back to the main menu')
+            self.worksheet_handler.start_worksheet_loop()
+            return True
+        return False
+
     def get_delete_task_input(self):
         """
         Method to prompt the user to enter the name of the task they want to
@@ -642,6 +649,7 @@ class TodoList:
         user_choice = self.user_input_handler.get_user_choice_for_task()
         self.handle_user_choice(user_choice)
 
+
     def handle_user_choice(self, choice):
         """
         Method to handle the user's choice for action in the todo list.
@@ -656,6 +664,11 @@ class TodoList:
                 self.task_handler.display_all_tasks()
                 task_name_to_update = input('Please enter the name of the task'
                 ' you would like to update: ')
+                if task_name_to_update.lower() == 'q':
+                    print()
+                    print('Going back to main menu')
+                    self.worksheet_handler.start_worksheet_loop()
+                    return
                 self.task_handler.update_task(task_name_to_update)
             elif choice == 'c':
                 self.task_handler.sort_tasks()
