@@ -5,7 +5,6 @@ update, sort, delete and view tasks.
 """
 import sys # sys module to run the function sys.exit()
 from datetime import datetime
-import re
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -85,18 +84,18 @@ class TaskHandler:
 
     def validate_due_date_input(self, due_date):
         """
-        Validate the format of the due date the user puts in.
-        Returns True if the date has a valid format, otherwise False.
-        The valid date format is 'DD/MM/YY':
-            - DD is a two-digit day (01-31),
-            - MM is a two-digit month (01-12),
-            - YY is a two-digit year 00-99)
+        Method to validate due date format. Returns True if the format is
+        correct, otherwise returns False.
+        Code from https://datatest.readthedocs.io/en/stable/how-to/date-time-
+        str.html and https://www.digitalocean.com/community/tutorials/python-
+        string-to-datetime-strptime
         """
-        # Code taken from https://www.freecodecamp.org/news/regex-for-date-
-        #formats-what-is-the-regular-expression-for-matching-dates/
-        valid_due_date_input = re.compile(r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]\
-        |1[0-2])/\d{2}$')
-        return bool(due_date == '' or valid_due_date_input.match(due_date))
+        try:
+            # Attempt to parse the date using the specified format
+            datetime.strptime(due_date, '%d/%m/%y')
+            return True  # Date is in the correct format
+        except ValueError:
+            return False  # Date is not in the correct format
 
     def add_task(self, task_data, worksheet_name):
         """
@@ -132,63 +131,87 @@ class TaskHandler:
         user do not want to update a specific category, the user press Enter
         to go to the next category.
         """
-        task_to_update = next((task for task in self.tasks if \
-        task.task_name.lower() == task_name.lower()), None)
+        task_to_update = self.find_task_by_name(task_name)
 
-        if task_to_update is not None:
-            print(f'Current Task: {task_to_update.task_name}')
-
-            new_task_name = self.user_input_handler.get_update_task_input\
-            ('Please enter a new task name', task_to_update.task_name)
-            if self.user_input_handler.handle_exit_condition(new_task_name):
-                return
-            task_to_update.task_name = new_task_name if new_task_name else \
-            task_to_update.task_name
-
-            print(f'Current Description: {task_to_update.description}')
-            new_description = self.user_input_handler.get_update_task_input\
-            ('Please enter updated description', task_to_update.description)
-            if self.user_input_handler.handle_exit_condition(new_description):
-                return
-            task_to_update.description = new_description if new_description \
-            else task_to_update.description
-
-            print(f'Current Due Date: {task_to_update.due_date}')
-            new_due_date = self.user_input_handler.get_update_task_input\
-            ('Please enter updated due date (format dd/mm/yy)', \
-            task_to_update.due_date)
-            if self.user_input_handler.handle_exit_condition(new_due_date):
-                return
-            if self.validate_due_date_input(new_due_date):
-                task_to_update.due_date = new_due_date if new_due_date else\
-                 task_to_update.due_date
-            else:
-                print('Invalid date format. Task due date remains unchanged.')
-
-            print(f'Current Priority: {task_to_update.priority}')
-            new_priority = self.user_input_handler.get_update_task_input\
-            ('Please enter updated priority ', task_to_update.priority)
-            if self.user_input_handler.handle_exit_condition(new_priority):
-                return
-            if new_priority:
-                try:
-                    new_priority = int(new_priority)
-                    if 1 <= new_priority <= 10:
-                        task_to_update.priority = new_priority
-                    else:
-                        print('Invalid priority number. Task priority '
-                        'remains unchanged.')
-                except ValueError:
-                    print('Invalid input. Priority should be a number. '
-                    'Task priority remains unchanged.')
-
-            print(f'Task {task_to_update.task_name} updated successfully.')
+        if task_to_update:
+            self.update_task_name(task_to_update)
+            self.update_description(task_to_update)
+            self.update_due_date(task_to_update)
+            self.update_priority(task_to_update)
+            print(f'Task {task_to_update.task_name} updated sucessfully')
             self.update_worksheet_data()
         else:
             print(f'Task {task_name} not found.')
-
         if self.worksheet_handler:
             self.worksheet_handler.start_worksheet_loop()
+
+    def find_task_by_name(self, task_name):
+        """
+        Method to find a task in the worksheet by its name.
+        """
+        return next((task for task in self.tasks if task.task_name.lower() \
+        == task_name.lower()), None)
+
+    def update_task_name(self, task):
+        """
+        Method to update the name of the task
+        """
+        print(f'Current Description: {task.task_name}')
+        new_task_name = self.user_input_handler.get_update_task_input\
+        ('Please enter a new task name', task.task_name)
+        if self.user_input_handler.handle_exit_condition(new_task_name):
+            return
+        task.task_name = new_task_name if new_task_name else \
+        task.task_name
+
+    def update_description(self, task):
+        """
+        Method to update the description of the task
+        """
+        print(f'Current Description: {task.description}')
+        new_description = self.user_input_handler.get_update_task_input\
+        ('Please enter updated description', task.description)
+        if self.user_input_handler.handle_exit_condition(new_description):
+            return
+        task.description = new_description if new_description \
+        else task.description
+
+    def update_due_date(self, task):
+        """
+        Method to update the due date of the task
+        """
+        print(f'Current Due Date: {task.due_date}')
+        new_due_date = self.user_input_handler.get_update_task_input\
+        ('Please enter updated due date (format dd/mm/yy)', \
+        task.due_date)
+        if self.user_input_handler.handle_exit_condition(new_due_date):
+            return
+        if self.validate_due_date_input(new_due_date):
+            task.due_date = new_due_date if new_due_date else\
+                task.due_date
+        else:
+            print('Invalid date format. Task due date remains unchanged.')
+
+    def update_priority(self, task):
+        """
+        Method to update the priority of the task
+        """
+        print(f'Current Priority: {task.priority}')
+        new_priority = self.user_input_handler.get_update_task_input\
+        ('Please enter updated priority ', task.priority)
+        if self.user_input_handler.handle_exit_condition(new_priority):
+            return
+        if new_priority:
+            try:
+                new_priority = int(new_priority)
+                if 1 <= new_priority <= 10:
+                    task.priority = new_priority
+                else:
+                    print('Invalid priority number. Task priority '
+                    'remains unchanged.')
+            except ValueError:
+                print('Invalid input. Priority should be a number. '
+                'Task priority remains unchanged.')
 
     def update_worksheet_data(self):
         """
@@ -557,7 +580,8 @@ class UserInputHandler:
         task_data = [task_name, description, due_date, priority]
         return task_data
 
-    def get_update_task_input(self, prompt):
+    #def get_update_task_input(self, prompt, default_value):
+    def get_update_task_input(self, prompt):  #linter
         """
         The method get user input to update a task, press Enter to keep current
         information or press 'q' to go back to main menu
