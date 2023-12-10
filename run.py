@@ -371,8 +371,14 @@ class WorksheetHandler:
             self.user_input_handler = UserInputHandler(self, \
             self.task_handler, Task('', '', '', 10))
             self.task_handler.load_tasks()
-            todo_list = TodoList(self.user_input_handler, \
-            self.task_handler, worksheet, worksheet_name, worksheet_handler)
+            config = {
+                'user_input_handler': self.user_input_handler,
+                'task_handler': self.task_handler,
+                'worksheet': worksheet,
+                'worksheet_name': worksheet_name,
+                'worksheet_handler': worksheet_handler
+            }
+            todo_list = TodoList(config)
             todo_list.display_choices_for_task()
             return worksheet
         except gspread.exceptions.WorksheetNotFound:
@@ -517,7 +523,6 @@ class UserInputHandler:
                 print()
                 print('Going back to main menu')
                 self.worksheet_handler.start_worksheet_loop()
-                return None
             else:
                 return task_name
 
@@ -532,9 +537,7 @@ class UserInputHandler:
                 print()
                 print('Going back to main menu')
                 self.worksheet_handler.start_worksheet_loop()
-                return None
-            else:
-                return description
+            return description
 
 
     def get_due_date(self, worksheet):
@@ -549,18 +552,14 @@ class UserInputHandler:
                 print()
                 print('Going back to main menu')
                 self.worksheet_handler.start_worksheet_loop()
-                return None
-            else:
-                valid_due_date_input = task_handler.validate_due_date_input\
-                (due_date)
-                if valid_due_date_input:
-                    return due_date
-                else:
-                    print('Invalid date format. Please try agian.')
+            valid_due_date_input = task_handler.validate_due_date_input\
+            (due_date)
+            if valid_due_date_input:
+                return due_date
+            print('Invalid date format. Please try agian.')
 
-
-
-    def get_priority(self, worksheet):
+    #def get_priority(self, worksheet):
+    def get_priority(self): #linter
         """
         Method to prompt the user to enter a priority (1-10) for the task
         """
@@ -568,24 +567,23 @@ class UserInputHandler:
             print()
             priority = input('Please choose a priority number between 1-10, '
             'where 1 is top priority: \n')
-            task_handler = TaskHandler(worksheet, self.worksheet_handler, self)
+            #task_handler = TaskHandler(worksheet, self.worksheet_handler, self) #linter
             if priority.lower() == 'q':
                 print()
                 print('Going back to main menu')
                 self.worksheet_handler.start_worksheet_loop()
-                return None
             if not priority:
                 priority = 10
                 print(f'The default value {priority} is set when you do '
                 'not add a number.')
                 return priority
-                break
+                #break
             try:
                 # Convert input to integer
                 priority = int(priority)
                 if 1<= priority <=10:
                     return priority
-                    break
+                    #break
             except ValueError:
                 print('Invalid input. Please enter a valid number')
 
@@ -609,12 +607,14 @@ class UserInputHandler:
         due_date = self.get_due_date(worksheet)
         if due_date is None:
             return None
-        priority = self.get_priority(worksheet)
+        #priority = self.get_priority(worksheet)
+        priority = self.get_priority() #linter
         if priority is None:
             return None
         task_data = [task_name, description, due_date, priority]
         return task_data
 
+    #def get_update_task_input(self, prompt, current_value):
     def get_update_task_input(self, prompt, current_value):
         """
         The method get user input to update a task, press Enter to keep current
@@ -675,13 +675,19 @@ class TodoList:
     """
     Class representing a todo list.
     """
-    def __init__(self, user_input_handler, task_handler, worksheet,\
-    worksheet_name, worksheet_handler):
-        self.user_input_handler = user_input_handler
-        self.task_handler = task_handler
-        self.worksheet = worksheet
-        self.worksheet_name = worksheet_name
-        self.worksheet_handler = worksheet_handler
+    def __init__(self, config):
+        self.user_input_handler = config.get('user_input_handler')
+        self.task_handler = config.get('task_handler')
+        self.worksheet = config.get('worksheet')
+        self.worksheet_name = config.get('worksheet_name')
+        self.worksheet_handler = config.get('worksheet_handler') or self.default_worksheet_handler()
+
+    def default_worksheet_handler(self):
+        """
+        Create and return a default worksheet handler
+        """
+        default_handler = WorksheetHandler(Sheet().sheet)
+        return default_handler
 
     def display_choices_for_task(self):
         """
@@ -754,9 +760,11 @@ def main():
     The main function of the program witch initalizes Sheet, WorksheetHandler
     and call method start_worksheet_loop()
     """
+
     sheet = Sheet().sheet
     worksheet_handler = WorksheetHandler(sheet)
     worksheet_handler.start_worksheet_loop()
+
 
 if __name__ == '__main__':
     main()
