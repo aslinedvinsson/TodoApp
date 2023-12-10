@@ -97,28 +97,24 @@ class TaskHandler:
         except ValueError:
             return False  # Date is not in the correct format
 
-    def add_task(self, task_data, worksheet_name):
+    def add_task(self, task_data, worksheet_name = None, worksheet = None):
         """
         Add a task to a opened worksheet.
-        The method prompts user to enter information about
-        - Task name (mandatory)
-        - Task description
-        - Due date
-        - Priority number between 1-10
-        The method uses input validation and adds default value 10 if no
-        priority number is given by the user.
         The method calls the update_worksheet_data method.
         """
         try:
-            if self.worksheet:
-                self.worksheet.append_row([worksheet_name] + task_data)
+            if worksheet_name and worksheet:
+                row_data = [worksheet_name] + task_data
+                row_data = [item if item is not None else '' for item \
+                in row_data]
+                worksheet.append_row(row_data)
                 print(f'Task added to {worksheet_name}')
                 self.load_tasks()
             else:
-                print('Task was not added')
+                print('Invalid worksheet information. Task was not added.')
         except gspread.exceptions.APIError as e:
             print(f'{e} error adding task')
-            print()
+        print()
         print('Going back to the main menu')
         self.worksheet_handler.start_worksheet_loop()
 
@@ -156,7 +152,7 @@ class TaskHandler:
         """
         Method to update the name of the task
         """
-        print(f'Current Description: {task.task_name}')
+        print(f'Current task name: {task.task_name}')
         new_task_name = self.user_input_handler.get_update_task_input\
         ('Please enter a new task name', task.task_name)
         if self.user_input_handler.handle_exit_condition(new_task_name):
@@ -168,7 +164,7 @@ class TaskHandler:
         """
         Method to update the description of the task
         """
-        print(f'Current Description: {task.description}')
+        print(f'Current description: {task.description}')
         new_description = self.user_input_handler.get_update_task_input\
         ('Please enter updated description', task.description)
         if self.user_input_handler.handle_exit_condition(new_description):
@@ -180,7 +176,7 @@ class TaskHandler:
         """
         Method to update the due date of the task
         """
-        print(f'Current Due Date: {task.due_date}')
+        print(f'Current due date: {task.due_date}')
         new_due_date = self.user_input_handler.get_update_task_input\
         ('Please enter updated due date (format dd/mm/yy)', \
         task.due_date)
@@ -196,7 +192,7 @@ class TaskHandler:
         """
         Method to update the priority of the task
         """
-        print(f'Current Priority: {task.priority}')
+        print(f'Current priority: {task.priority}')
         new_priority = self.user_input_handler.get_update_task_input\
         ('Please enter updated priority ', task.priority)
         if self.user_input_handler.handle_exit_condition(new_priority):
@@ -507,17 +503,12 @@ class UserInputHandler:
         """
         return input('Please, enter your choice: \n')
 
-    def get_add_task_input(self, worksheet):
+    def get_task_name(self):
         """
-        Method to prompt the user to enter information to add a new task. The
-        user is asked to enter information on task name, description, due date
-        and priority. Only task name is mandatory for the user to enter. If the
-        user at any time press q, they exit and return to the main menu.
+        Method to prompt the user to enter a task name. Only task name is
+        mandatory for the user to enter. If the user at any time press q,
+        they exit and return to the main menu.
         """
-        print()
-        print('To add a task you have to enter a task name. All other '
-        'information is optional to add. Just press Enter when you want to '
-        'go to the next category.')
         while True:
             task_name = input('Please add the name of the task: \n')
             if task_name == '':
@@ -528,7 +519,12 @@ class UserInputHandler:
                 self.worksheet_handler.start_worksheet_loop()
                 return None
             else:
-                break
+                return task_name
+
+    def get_descripton(self):
+        """
+        Method to prompt the user to enter a priority (1-10) for the task
+        """
         while True:
             print()
             description = input('Please add a description of the task: \n')
@@ -537,8 +533,14 @@ class UserInputHandler:
                 print('Going back to main menu')
                 self.worksheet_handler.start_worksheet_loop()
                 return None
-            description = description if description else None
-            break
+            else:
+                return description
+
+
+    def get_due_date(self, worksheet):
+        """
+        Method to prompt the user to enter a description for the task
+        """
         while True:
             print()
             due_date = input('Please enter a due-date(format dd/mm/yy): \n')
@@ -548,12 +550,20 @@ class UserInputHandler:
                 print('Going back to main menu')
                 self.worksheet_handler.start_worksheet_loop()
                 return None
-            valid_due_date_input = \
-            task_handler.validate_due_date_input(due_date)
-            if valid_due_date_input:
-                break
-            print('Invalid date format. Please try agian.')
-        due_date = due_date if due_date else None
+            else:
+                valid_due_date_input = task_handler.validate_due_date_input\
+                (due_date)
+                if valid_due_date_input:
+                    return due_date
+                else:
+                    print('Invalid date format. Please try agian.')
+
+
+
+    def get_priority(self, worksheet):
+        """
+        Method to prompt the user to enter a priority (1-10) for the task
+        """
         while True:
             print()
             priority = input('Please choose a priority number between 1-10, '
@@ -568,27 +578,53 @@ class UserInputHandler:
                 priority = 10
                 print(f'The default value {priority} is set when you do '
                 'not add a number.')
+                return priority
                 break
             try:
                 # Convert input to integer
                 priority = int(priority)
                 if 1<= priority <=10:
+                    return priority
                     break
             except ValueError:
                 print('Invalid input. Please enter a valid number')
 
+    def get_add_task_input(self, worksheet):
+        """
+        Method to prompt the user to enter information to add a new task. The
+        user is asked to enter information on task name, description, due date
+        and priority. Only task name is mandatory for the user to enter. If the
+        user at any time press q, they exit and return to the main menu.
+        """
+        print()
+        print('To add a task you have to enter a task name. All other '
+            'information is optional to add. Just press Enter when you want to '
+            'go to the next category.')
+        task_name = self.get_task_name()
+        if task_name is None:
+            return None
+        description = self.get_descripton()
+        if description is None:
+            return None
+        due_date = self.get_due_date(worksheet)
+        if due_date is None:
+            return None
+        priority = self.get_priority(worksheet)
+        if priority is None:
+            return None
         task_data = [task_name, description, due_date, priority]
         return task_data
 
-    #def get_update_task_input(self, prompt, default_value):
-    def get_update_task_input(self, prompt):  #linter
+    def get_update_task_input(self, prompt, current_value):
         """
         The method get user input to update a task, press Enter to keep current
         information or press 'q' to go back to main menu
         """
-        user_input = input (f'{prompt} (press Enter to keep current '
-        'information, or press q to go back to main menu): ')
-        return user_input
+        while True:
+            user_input = input (f'{prompt} (press Enter to keep current '
+            'information, or press q to go back to main menu): ')
+            self.handle_exit_condition(user_input)
+            return user_input
 
     def handle_exit_condition(self, user_input):
         """
@@ -682,8 +718,9 @@ class TodoList:
             if choice == 'a':
                 task_data = \
                 self.user_input_handler.get_add_task_input(self.worksheet)
-                self.task_handler.add_task(task_data, \
-                self.worksheet_name, self.worksheet)
+                if task_data is not None:
+                    self.task_handler.add_task(task_data, \
+                    self.worksheet_name, self.worksheet)
             elif choice == 'b':
                 self.task_handler.display_all_tasks()
                 task_name_to_update = input('Please enter the name of the task'
