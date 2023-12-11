@@ -552,6 +552,8 @@ class UserInputHandler:
                 print()
                 print('Going back to main menu')
                 self.worksheet_handler.start_worksheet_loop()
+            elif due_date == '':
+                return due_date
             valid_due_date_input = task_handler.validate_due_date_input\
             (due_date)
             if valid_due_date_input:
