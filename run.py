@@ -370,7 +370,7 @@ class WorksheetHandler:
             existing_worksheets = self.sheet.worksheets()
             for existing_worksheet in existing_worksheets:
                 if existing_worksheet.title == worksheet_name:
-                    print(f'Worksheet {worksheet_name} already exist. Chose '
+                    print(f'Todo-list {worksheet_name} already exist. Chose '
                     'another name for the worksheet.')
                     return None
             worksheet = self.sheet.add_worksheet(title = worksheet_name, \
@@ -465,16 +465,19 @@ class WorksheetHandler:
         """
         worksheet = None
         while True:
+            print('Welcome to your todo app! Here, you can create todo lists,'
+            ' and within each list, you can efficiently manage your tasks by '
+            'adding, updating, sorting, deleting, and viewing them.')
             print()
             print('What would you like to do? Choose one option by entering '
             'a number. You can press q whenever you want to quit or get back '
             'to the start and make a new choice')
-            print('1. Create a new worksheet')
-            print('2. Open a specific worksheet. Here you can then modify your'
-            ' worksheet by handeling tasks in the worksheet')
-            print('3. Display a list of your current worksheets')
-            print('4. Delete a whole worksheet. If you do NOT want to delete '
-            'a worksheet, press q to exit the program.')
+            print('1. Create a new todo-list')
+            print('2. Open a specific todo-list. Here you can then modify your'
+            ' todo-list by handeling tasks in the todo-list')
+            print('3. Display a list of your current todo-list')
+            print('4. Delete a whole todo-list. If you do NOT want to delete '
+            'a todo-list, press q to exit the program.')
             print('q. Quit')
             worksheet_choice = input('Please enter your choice: \n')
             print()
@@ -519,7 +522,7 @@ class WorksheetHandler:
         Prompt the user to enter the name of a worksheet.
         """
         while True:
-            worksheet_name = input('Please enter a worksheet name: \n').lower()
+            worksheet_name = input('Please enter a todo-list name: \n').lower()
             if worksheet_name.lower() == 'q':
                 print()
                 print('Going back to main menu')
