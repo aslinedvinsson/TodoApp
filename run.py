@@ -596,8 +596,8 @@ class UserInputHandler:
                 return due_date
             print('Invalid date format. Please try agian.')
 
-    #def get_priority(self, worksheet):
-    def get_priority(self): #linter
+
+    def get_priority(self):
         """
         Method to prompt the user to enter a priority (1-10) for the task
         """
@@ -614,13 +614,11 @@ class UserInputHandler:
                 print(f'The default value {priority} is set when you do '
                 'not add a number.')
                 return priority
-                #break
             try:
                 # Convert input to integer
                 priority = int(priority)
                 if 1<= priority <=10:
                     return priority
-                    #break
             except ValueError:
                 print('Invalid input. Please enter a valid number')
 
@@ -644,8 +642,7 @@ class UserInputHandler:
         due_date = self.get_due_date(worksheet)
         if due_date is None:
             return None
-        #priority = self.get_priority(worksheet)
-        priority = self.get_priority() #linter
+        priority = self.get_priority()
         if priority is None:
             return None
         task_data = [task_name, description, due_date, priority]
