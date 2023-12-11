@@ -35,6 +35,27 @@ class Task:
         self.description = description
         self.due_date = due_date
         self.priority = priority
+        self.urgency = self.calculate_urgency()
+
+    def summary(self):
+        """
+        Returns a summary of the task.
+        """
+        return f'Task: {self.task_name}, Description: {self.description}, \
+        Due Date: {self.due_date}, Priority: {self.priority}'
+
+    def calculate_urgency(self):
+        """
+        Calculates and returns the urgency of the task based on due date
+        and priority.
+        """
+        if self.due_date:
+            due_date = datetime.strptime(self.due_date, '%d/%m/%y')
+            if self.priority is not None:
+                priority = int(self.priority)
+                urgency = priority / (due_date - datetime.now()).days
+                return round(urgency, 2)
+        return None
 
 class TaskHandler:
     """
@@ -78,8 +99,10 @@ class TaskHandler:
            #with all the information about the task, starting index from 1
            #instead of 0 to be more logical to the user
         for task in self.tasks:
-            print(f'Task: {task.task_name} Description: {task.description} \
-            Due Date: {task.due_date}, Priority: {task.priority}')
+            urgency = task.calculate_urgency()
+            urgency_message = f'Urgency: {round(urgency, 2)}' if urgency is \
+            not None else 'No due date'
+            print(f'{task.summary()}, {urgency_message}')
         return self.tasks
 
     def validate_due_date_input(self, due_date):
