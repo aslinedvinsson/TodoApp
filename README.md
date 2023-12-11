@@ -27,8 +27,6 @@ The code organizes its functionality into classes, including Task, TaskHandler, 
 #### WorksheetHandler Class
 The main functionality is encapsulated within the WorksheetHandler class, which control the overall flow of the application. This includes creating, opening, and deleting worksheets.
 
-printscreeen###
-
 #### Dependency on Google Sheets:
 To interact with Google Sheets, the application relies on the gspread library. OAuth2 credentials (creds.json) are utilized for secure authentication.
 
@@ -37,7 +35,6 @@ The code incorporates try-except blocks for handling exceptions such as gspread.
 
 #### User Input Handling
 Responsibility for collecting user input for tasks like creating, opening, viewing, and deleting todo-lists lies with the UserInputHandler class. Additionally, this class manages user input related to tasks, such as adding, updating, sorting, and deleting tasks.
-printscreeen###
 
 #### Task Handling
 The TaskHandler class is dedicated to managing tasks within a worksheet. Its responsibilities include loading tasks from the worksheet, displaying tasks, adding tasks, updating tasks, and deleting tasks.
@@ -109,9 +106,9 @@ As a site administrator I want to
 - Language: Python
 - [gspread](https://docs.gspread.org/en/v5.12.0/) Google API for GoogleSheets
 - [google.oauth2.service_account](https://google-auth.readthedocs.io/en/master/reference/google.oauth2.service_account.html) provides functionality for working with Google Cloud service accounts. Service accounts are special Google accounts that belong to the application , rather than to an individual end user.
-- [Sys.exit####]
+- [Sys.exit](https://docs.python.org/3/library/sys.html) to exit the program
 - [Datetime](https://docs.python.org/3/library/datetime.html) for manipulating dates and times
-- colorama used to add color for ......####
+
 
 ### Other tools
 - [GitHub](https://github.com/) Used to host the application source code.
@@ -122,21 +119,13 @@ As a site administrator I want to
 ## Testing
 
 ### Automated testing
-Automated testing was performed using the Code Institutes' own linter, available at https://pep8ci.herokuapp.com/ and Pylint at https://pypi.org/project/pylint/ to check the code. ####The file run.py revealed no errors or warnings in the code.
-
-
-Error:
-
-Solution:
-
-No further errors or warnings.
-
-####printscreen
+Automated testing was performed using Pylint at https://pypi.org/project/pylint/ to check the code. The file run.py revealed no errors or warnings in the code.
+![alt-text](documentation/pylint.png)
 
 
 [Lighthouse](https://chromewebstore.google.com/detail/lighthouse/blipmdconlkpinefehnmjammfjpmpbjk?hl=sv&pli=1)
+![alt-text](documentation/lighthouse.png)
 
-####printscreen
 
 ### Browser Testing
 
@@ -172,9 +161,9 @@ This project was deployed using Code Insitute's mock terminal for Heroku.
 
 ### Code from
 
-###Add
+###Add more?
 
-Method validate_due_date() comes from code at [datatest](https://datatest.readthedocs.io/en/stable/how-to/date-time-str.html) and ’[digital ocean](https://www.digitalocean.com/community/tutorials/python-string-to-datetime-strptime).
+Method validate_due_date() comes from code at [datatest](https://datatest.readthedocs.io/en/stable/how-to/date-time-str.html) and [digital ocean](https://www.digitalocean.com/community/tutorials/python-string-to-datetime-strptime).
 
 The utilization of the [Code Institute p3-template](https://github.com/Code-Institute-Org/p3-template) facilitated the development of this project. This template includes the necessary code to enable the execution of my Python run.py within a console window embedded in a web page.
 The tasks of activating API credentials, establishing a connection to the API, and importing the gspread library were accomplished by following the Love Sandwiches walkthrough provided by Code Institute.
