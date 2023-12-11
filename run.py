@@ -152,9 +152,8 @@ class TaskHandler:
         """
         Method to update the name of the task
         """
-        print(f'Current task name: {task.task_name}')
         new_task_name = self.user_input_handler.get_update_task_input\
-        ('Please enter a new task name', task.task_name)
+        ('Please enter a new task name.', task.task_name)
         if self.user_input_handler.handle_exit_condition(new_task_name):
             return
         task.task_name = new_task_name if new_task_name else \
@@ -164,7 +163,6 @@ class TaskHandler:
         """
         Method to update the description of the task
         """
-        print(f'Current description: {task.description}')
         new_description = self.user_input_handler.get_update_task_input\
         ('Please enter updated description', task.description)
         if self.user_input_handler.handle_exit_condition(new_description):
@@ -186,13 +184,13 @@ class TaskHandler:
             task.due_date = new_due_date if new_due_date else\
                 task.due_date
         else:
-            print('Invalid date format. Task due date remains unchanged.')
+            print('No new due date entered or invalid date format. Task due '
+            'date remains unchanged.')
 
     def update_priority(self, task):
         """
         Method to update the priority of the task
         """
-        print(f'Current priority: {task.priority}')
         new_priority = self.user_input_handler.get_update_task_input\
         ('Please enter updated priority ', task.priority)
         if self.user_input_handler.handle_exit_condition(new_priority):
@@ -569,7 +567,6 @@ class UserInputHandler:
             print()
             priority = input('Please choose a priority number between 1-10, '
             'where 1 is top priority: \n')
-            #task_handler = TaskHandler(worksheet, self.worksheet_handler, self) #linter
             if priority.lower() == 'q':
                 print()
                 print('Going back to main menu')
@@ -616,15 +613,15 @@ class UserInputHandler:
         task_data = [task_name, description, due_date, priority]
         return task_data
 
-    #def get_update_task_input(self, prompt, current_value):
     def get_update_task_input(self, prompt, current_value):
         """
         The method get user input to update a task, press Enter to keep current
         information or press 'q' to go back to main menu
         """
         while True:
-            user_input = input (f'{prompt} (press Enter to keep current '
-            'information, or press q to go back to main menu): ')
+            user_input = input (f'{prompt} Current value: {current_value}. '
+            'Press Enter to keep current information, or press q to go back '
+            'to main menu): ')
             self.handle_exit_condition(user_input)
             return user_input
 
@@ -682,7 +679,8 @@ class TodoList:
         self.task_handler = config.get('task_handler')
         self.worksheet = config.get('worksheet')
         self.worksheet_name = config.get('worksheet_name')
-        self.worksheet_handler = config.get('worksheet_handler') or self.default_worksheet_handler()
+        self.worksheet_handler = config.get('worksheet_handler') or \
+        self.default_worksheet_handler()
 
     def default_worksheet_handler(self):
         """
