@@ -282,7 +282,13 @@ class TaskHandler:
             'you choose: ')
             if choice in ['1', '2', '3']:
                 break
-            print('Invalid choice. Please try again.')
+            elif choice.lower() == 'q':
+                        print()
+                        print('Going back to main menu')
+                        self.worksheet_handler.start_worksheet_loop()
+                        return None
+            else:
+                print('Invalid choice. Please try again.')
         #Initialize an empty list to store sorted tasks
         sorted_tasks = []
         if choice == '1':
@@ -338,6 +344,8 @@ class Sheet:
             return sheet
         except gspread.exceptions.SpreadsheetNotFound as e:
             print(f'Spreadsheet not found: {e}')
+            ptint('Exiting the program. Press the red button to start the app'
+            'again.')
             sys.exit()
 
     def linter_method(self):
@@ -370,7 +378,10 @@ class WorksheetHandler:
                     print(f'{worksheet_name} was got')
                     return worksheet
         except gspread.exceptions.WorksheetNotFound:
-            print(f'Worksheet not found: {worksheet_name}')
+            print(f'Todo-list not found: {worksheet_name}.Going back to main '
+            'menu')
+            self.start_worksheet_loop()
+            return None
         except gspread.exceptions.APIError as e:
             print(f'Error getting worksheet: {e}')
         return None
@@ -430,7 +441,8 @@ class WorksheetHandler:
             todo_list.display_choices_for_task()
             return worksheet
         except gspread.exceptions.WorksheetNotFound:
-            print(f'Worksheet not found: {worksheet_name}')
+            print(f'Todo-list not found: {worksheet_name}. Going back to main'
+            ' menu')
             self.start_worksheet_loop()
             return None
         except gspread.exceptions.APIError as e:
@@ -448,7 +460,7 @@ class WorksheetHandler:
         try:
             worksheets = self.sheet.worksheets()
             worksheet_names = [worksheet.title for worksheet in worksheets]
-            print('Your current worksheets:')
+            print('Your current todo-lists:')
             for name in worksheet_names:
                 print(name)
         except gspread.exceptions.APIError as e:
@@ -464,9 +476,9 @@ class WorksheetHandler:
         try:
             worksheet = self.sheet.worksheet(worksheet_delete)
             self.sheet.del_worksheet(worksheet)
-            print(f'Worksheet {worksheet_delete} was deleted.')
+            print(f'Todo-list {worksheet_delete} was deleted.')
         except gspread.exceptions.WorksheetNotFound:
-            print(f'Worksheet not found: {worksheet_delete}')
+            print(f'Todo-list not found: {worksheet_delete}')
         except gspread.exceptions.APIError as e:
             print(f'{e} error deleting worksheet')
             print()
@@ -502,7 +514,6 @@ class WorksheetHandler:
             print('3. Display a list of your current todo-list')
             print('4. Delete a whole todo-list. If you do NOT want to delete '
             'a todo-list, press q to exit the program.')
-            print('q. Quit')
             worksheet_choice = input('Please enter your choice: \n')
             print()
             if worksheet_choice == '1':
@@ -531,15 +542,9 @@ class WorksheetHandler:
                         print('Going back to main menu')
                         self.start_worksheet_loop()
                         return None
-                    self.delete_worksheet(worksheet_delete)
-                    break
-            elif worksheet_choice.lower() == 'q':
-                print()
-                print('Going back to main menu')
-                self.start_worksheet_loop()
-                return None
             else:
-                print('Invalid choice. Please enter a valid choice')
+                print(f'{worksheet_choice} is not a valid choice. Please enter '
+                ' a valid choice.')
 
     def get_worksheet_name(self):
         """
@@ -811,8 +816,8 @@ class TodoList:
                 self.worksheet_handler.start_worksheet_loop()
                 return
             else:
-                print('Invalid choice. Please enter a valid choice')
-                choice = input('Please enter your choice again: ')
+                choice = input('Invalid choice. Please enter your choice '
+                'again: ')
 
 def main():
     """
