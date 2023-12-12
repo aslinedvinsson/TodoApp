@@ -5,6 +5,7 @@ update, sort, delete and view tasks.
 """
 import sys # sys module to run the function sys.exit()
 from datetime import datetime
+from pyfiglet import Figlet
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -37,7 +38,7 @@ class Task:
         self.priority = priority
         self.urgency = self.calculate_urgency()
 
-    def summary(self):
+    def task_summary(self):
         """
         Returns a summary of the task.
         """
@@ -47,7 +48,8 @@ class Task:
     def calculate_urgency(self):
         """
         Calculates and returns the urgency of the task based on due date
-        and priority.
+        and priority by dividing the priority by the number of days left until
+        due date.
         """
         if self.due_date:
             due_date = datetime.strptime(self.due_date, '%d/%m/%y')
@@ -78,7 +80,9 @@ class TaskHandler:
         """
         if self.worksheet:
             data = self.worksheet.get_all_values()
+            #initialize an empty list
             self.tasks = []
+            #skip the first row witch is the header row
             for row in data[1:]:
                 task = Task(row[1], row[2], row[3], row[4])
                 self.tasks.append(task)
@@ -100,9 +104,10 @@ class TaskHandler:
            #instead of 0 to be more logical to the user
         for task in self.tasks:
             urgency = task.calculate_urgency()
+            #If there is a due date, the urganecy is calculated
             urgency_message = f'Urgency: {round(urgency, 2)}' if urgency is \
             not None else 'No due date'
-            print(f'{task.summary()}, {urgency_message}')
+            print(f'{task.task_summary()}, {urgency_message}')
         return self.tasks
 
     def validate_due_date_input(self, due_date):
@@ -114,11 +119,13 @@ class TaskHandler:
         string-to-datetime-strptime
         """
         try:
-            # Attempt to parse the date using the specified format
+            # Try to parse the date using the specified format
             datetime.strptime(due_date, '%d/%m/%y')
-            return True  # Date is in the correct format
+            # Date is in the correct format
+            return True
         except ValueError:
-            return False  # Date is not in the correct format
+            # Date is not in the correct format
+            return False
 
     def add_task(self, task_data, worksheet_name = None, worksheet = None):
         """
@@ -128,6 +135,8 @@ class TaskHandler:
         try:
             if worksheet_name and worksheet:
                 row_data = [worksheet_name] + task_data
+                #List comprehension to replace any None in row_data with an
+                #empty string
                 row_data = [item if item is not None else '' for item \
                 in row_data]
                 worksheet.append_row(row_data)
@@ -252,6 +261,8 @@ class TaskHandler:
         - sort by due date
         - sort by priority
         The method then sorts the tasks and update the worksheet.
+        Learned abourt lambda functions at https://www.freecodecamp.org/news/
+        python-lambda-functions/
         """
         # Skip first row with categorie names
         tasks = self.worksheet.get_all_values()[1:]
@@ -273,13 +284,17 @@ class TaskHandler:
             if choice in ['1', '2', '3']:
                 break
             print('Invalid choice. Please try again.')
+        #Initialize an empty list to store sorted tasks
         sorted_tasks = []
         if choice == '1':
+            #Sorted by the second element of each task
             sorted_tasks = sorted(tasks, key = lambda x: x[1])
         elif choice == '2':
+            #Sorted by the fourth element of each task
             sorted_tasks = sorted(tasks, key = lambda x: \
             datetime.strptime( x[3], '%d/%m/%y') if x[3] else datetime.max)
         elif choice == '3':
+            #Sorted by the fifth element of each task
             sorted_tasks = sorted(tasks, key = lambda x: int(x[4]))
         # Empty existing data in the worksheet
         self.worksheet.clear()
@@ -404,14 +419,15 @@ class WorksheetHandler:
             self.user_input_handler = UserInputHandler(self, \
             self.task_handler, Task('', '', '', 10))
             self.task_handler.load_tasks()
-            config = {
+            #Create a dictionary to hold references to objects
+            settings = {
                 'user_input_handler': self.user_input_handler,
                 'task_handler': self.task_handler,
                 'worksheet': worksheet,
                 'worksheet_name': worksheet_name,
                 'worksheet_handler': worksheet_handler
             }
-            todo_list = TodoList(config)
+            todo_list = TodoList(settings)
             todo_list.display_choices_for_task()
             return worksheet
         except gspread.exceptions.WorksheetNotFound:
@@ -465,6 +481,8 @@ class WorksheetHandler:
         """
         worksheet = None
         while True:
+            f = Figlet(font='slant')
+            print(f.renderText('Todo-App'))
             print('Welcome to your todo app! Here, you can create todo lists,'
             ' and within each list, you can efficiently manage your tasks by '
             'adding, updating, sorting, deleting, and viewing them.')
@@ -709,12 +727,12 @@ class TodoList:
     """
     Class representing a todo list.
     """
-    def __init__(self, config):
-        self.user_input_handler = config.get('user_input_handler')
-        self.task_handler = config.get('task_handler')
-        self.worksheet = config.get('worksheet')
-        self.worksheet_name = config.get('worksheet_name')
-        self.worksheet_handler = config.get('worksheet_handler') or \
+    def __init__(self, settings):
+        self.user_input_handler = settings.get('user_input_handler')
+        self.task_handler = settings.get('task_handler')
+        self.worksheet = settings.get('worksheet')
+        self.worksheet_name = settings.get('worksheet_name')
+        self.worksheet_handler = settings.get('worksheet_handler') or \
         self.default_worksheet_handler()
 
     def default_worksheet_handler(self):
