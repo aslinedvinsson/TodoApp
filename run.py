@@ -5,7 +5,6 @@ update, sort, delete and view tasks.
 """
 import sys # sys module to run the function sys.exit()
 from datetime import datetime
-from pyfiglet import Figlet
 import gspread
 from google.oauth2.service_account import Credentials
 
