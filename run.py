@@ -481,8 +481,15 @@ class WorksheetHandler:
         """
         worksheet = None
         while True:
-            f = Figlet(font='slant')
-            print(f.renderText('Todo-App'))
+            title = """
+ _____      _         _____
+|_   _|__ _| |___ ___|  _  |___ ___
+  | || . | . | . |___|     | . | . |
+  |_||___|___|___|   |__|__|  _|  _|
+                           |_| |_|
+"""
+
+            print(title)
             print('Welcome to your todo app! Here, you can create todo lists,'
             ' and within each list, you can efficiently manage your tasks by '
             'adding, updating, sorting, deleting, and viewing them.')
