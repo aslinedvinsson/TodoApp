@@ -403,7 +403,7 @@ class WorksheetHandler:
             worksheet.row_values(1)
             worksheet.insert_row(['todo_title', 'task_name', 'description', \
             'due_date', 'priority'], 1)
-            print(f'Worksheet {worksheet_name} was created')
+            print(f'Todo-list {worksheet_name} was created')
             self.task_handler = TaskHandler(worksheet, self.worksheet_handler,\
              self.user_input_handler)
             return worksheet
@@ -481,7 +481,6 @@ class WorksheetHandler:
             print(f'Todo-list not found: {worksheet_delete}')
         except gspread.exceptions.APIError as e:
             print(f'{e} error deleting worksheet')
-            print()
             print('Going back to main menu')
             self.worksheet_handler.start_worksheet_loop()
 
@@ -499,7 +498,6 @@ class WorksheetHandler:
   |_||___|___|___|   |__|__|  _|  _|
                            |_| |_|
 """
-
             print(title)
             print('Welcome to your todo app! Here, you can create todo lists,'
             ' and within each list, you can efficiently manage your tasks by '
@@ -530,18 +528,25 @@ class WorksheetHandler:
             elif worksheet_choice == '3':
                 self.display_existing_worksheets()
             elif worksheet_choice == '4':
+                print('Are you sure you want to delete a worksheet? Once '
+                'you have deleted it, you can not get it back. If you do '
+                'NOT want to delete a worksheet, press q.')
+                self.display_existing_worksheets()
                 while True:
-                    print('Are you sure you want to delete a worksheet? Once '
-                    'you have deleted it, you can not get it back. If you do '
-                    'NOT want to delete a worksheet, press q.')
-                    self.display_existing_worksheets()
                     worksheet_delete = input('Please enter the name of the '
-                    'worksheet you would like to delete: \n').lower()
+                    'todo-list you would like to delete: \n').lower()
                     if worksheet_delete.lower() == 'q':
                         print()
                         print('Going back to main menu')
                         self.start_worksheet_loop()
                         return None
+                    elif worksheet_delete in [worksheet.title for worksheet \
+                        in self.sheet.worksheets()]:
+                        self.delete_worksheet(worksheet_delete)
+                        break
+                    else:
+                        print(f'{worksheet_delete} does not exist. Please try '
+                        'another todo-list name')
             else:
                 print(f'{worksheet_choice} is not a valid choice. Please enter '
                 ' a valid choice.')
@@ -604,7 +609,6 @@ class UserInputHandler:
                 self.worksheet_handler.start_worksheet_loop()
             return description
 
-
     def get_due_date(self, worksheet):
         """
         Method to prompt the user to enter a description for the task
@@ -624,7 +628,6 @@ class UserInputHandler:
             if valid_due_date_input:
                 return due_date
             print('Invalid date format. Please try agian.')
-
 
     def get_priority(self):
         """
@@ -824,11 +827,9 @@ def main():
     The main function of the program witch initalizes Sheet, WorksheetHandler
     and call method start_worksheet_loop()
     """
-
     sheet = Sheet().sheet
     worksheet_handler = WorksheetHandler(sheet)
     worksheet_handler.start_worksheet_loop()
-
 
 if __name__ == '__main__':
     main()
