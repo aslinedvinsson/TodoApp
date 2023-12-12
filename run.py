@@ -271,7 +271,7 @@ class TaskHandler:
             print()
             print('Going back to the main menu')
             self.worksheet_handler.start_worksheet_loop()
-            return
+            return None
         print('How would you like to sort your tasks?')
         print('1. Sort by task name (alphabetical order)')
         print('2. Sort by due date (The earliest date on the top of the '
@@ -280,15 +280,14 @@ class TaskHandler:
         while True:
             choice = input('Please enter the number of the sorting method '
             'you choose: ')
+            if choice.lower() == 'q':
+                print()
+                print('Going back to main menu')
+                self.worksheet_handler.start_worksheet_loop()
+                return None
             if choice in ['1', '2', '3']:
                 break
-            elif choice.lower() == 'q':
-                        print()
-                        print('Going back to main menu')
-                        self.worksheet_handler.start_worksheet_loop()
-                        return None
-            else:
-                print('Invalid choice. Please try again.')
+            print('Invalid choice. Please try again.')
         #Initialize an empty list to store sorted tasks
         sorted_tasks = []
         if choice == '1':
@@ -309,6 +308,7 @@ class TaskHandler:
             self.worksheet.append_row(task)
         print('The tasks are sorted')
         self.worksheet_handler.start_worksheet_loop()
+        return None
 
     def delete_task(self, row_to_delete_input):
         """
@@ -344,7 +344,7 @@ class Sheet:
             return sheet
         except gspread.exceptions.SpreadsheetNotFound as e:
             print(f'Spreadsheet not found: {e}')
-            ptint('Exiting the program. Press the red button to start the app'
+            print('Exiting the program. Press the red button to start the app'
             'again.')
             sys.exit()
 
@@ -540,12 +540,11 @@ class WorksheetHandler:
                         print('Going back to main menu')
                         self.start_worksheet_loop()
                         return None
-                    elif worksheet_delete in [worksheet.title for worksheet \
+                    if worksheet_delete in [worksheet.title for worksheet \
                         in self.sheet.worksheets()]:
                         self.delete_worksheet(worksheet_delete)
                         break
-                    else:
-                        print(f'{worksheet_delete} does not exist. Please try '
+                    print(f'{worksheet_delete} does not exist. Please try '
                         'another todo-list name')
             else:
                 print(f'{worksheet_choice} is not a valid choice. Please enter '
