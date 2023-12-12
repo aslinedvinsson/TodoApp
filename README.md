@@ -74,7 +74,7 @@ As a site administrator I want to:
 ## Features
 
 ### Logo
-Displays app title using ascii generator#####
+Displays app title using ascii generator through [Patorjk](https://patorjk.com/software/taag/#p=display&h=2&v=2&f=Rectangles&t=Todo-App)
 
 ### Welcome Message
 A welcome message is displayed upon starting the application, providing a introduction to the user.
@@ -111,6 +111,7 @@ As a site administrator I want to
 - [google.oauth2.service_account](https://google-auth.readthedocs.io/en/master/reference/google.oauth2.service_account.html) provides functionality for working with Google Cloud service accounts. Service accounts are special Google accounts that belong to the application , rather than to an individual end user.
 - [Sys.exit](https://docs.python.org/3/library/sys.html) to exit the program
 - [Datetime](https://docs.python.org/3/library/datetime.html) for manipulating dates and times
+
 
 
 ### Other tools
@@ -163,8 +164,6 @@ This project was deployed using Code Insitute's mock terminal for Heroku.
 ## Credits
 
 ### Code from
-
-###Add more?
 
 Method validate_due_date() comes from code at [datatest](https://datatest.readthedocs.io/en/stable/how-to/date-time-str.html) and [digital ocean](https://www.digitalocean.com/community/tutorials/python-string-to-datetime-strptime).
 
