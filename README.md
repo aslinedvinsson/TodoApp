@@ -8,10 +8,10 @@ https://todo--app-bd22256d01b5.herokuapp.com/
 
 
 ## Flowchart
-
 The flowchart below, constructed using [draw.io](https://app.diagrams.net/), illustrates the planning process for this application.
 
-add flowchart####
+![alt-text](documentation/flowchart.png)
+
 ## Design and organizational structure
 
 The design of the user interface was constrained due to its simplicity, as this is a basic terminal-based application.
@@ -93,14 +93,17 @@ The application incorporates error-handling mechanisms to manage unexpected situ
 As a user I want to
 - mark tasks as completed so that I can easily track my progress and identify the tasks that still need attention.
 - receive notifications or reminders for upcoming tasks or deadlines to help me stay on top of my responsibilities.
+- sort the tasks by calculating urgency
 - have the option to share my todo-lists with others, facilitating collaboration and coordination on shared projects or tasks.
 - be able to integrate the tasks with calendar apps to sync tasks and deadlines.
 
 As a site administrator I want to
 
 - have the ability to manage users, add or remove members, and control access to specific to-do lists.
+- offer the ability for the user to sort tasks by urgency and save and update worksheet with task urgency accordingly.
 - track and provide insights into user activity, such as completed tasks, common categories, and peak usage times.
 - implement a data backup system for administrators to safeguard user data, along with a recovery mechanism in case of accidental deletions or data loss.
+- Refactor code even more.
 
 ## Language, libraries and packages used
 - Language: Python
@@ -164,6 +167,8 @@ This project was deployed using Code Insitute's mock terminal for Heroku.
 ###Add more?
 
 Method validate_due_date() comes from code at [datatest](https://datatest.readthedocs.io/en/stable/how-to/date-time-str.html) and [digital ocean](https://www.digitalocean.com/community/tutorials/python-string-to-datetime-strptime).
+
+Learned about sorting with lambda functions through [Free code camp](https://www.freecodecamp.org/news/python-lambda-functions//)
 
 The utilization of the [Code Institute p3-template](https://github.com/Code-Institute-Org/p3-template) facilitated the development of this project. This template includes the necessary code to enable the execution of my Python run.py within a console window embedded in a web page.
 The tasks of activating API credentials, establishing a connection to the API, and importing the gspread library were accomplished by following the Love Sandwiches walkthrough provided by Code Institute.
