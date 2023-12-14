@@ -35,21 +35,23 @@ class Task:
         self.description = description
         self.due_date = due_date
         self.priority = priority
+
+    """
         self.urgency = self.calculate_urgency()
 
     def task_summary(self):
         """
-        Returns a summary of the task.
-        """
+        #Returns a summary of the task.
+"""
         return f'Task: {self.task_name}, Description: {self.description}, \
         Due Date: {self.due_date}, Priority: {self.priority}'
 
     def calculate_urgency(self):
         """
-        Calculates and returns the urgency of the task based on due date
-        and priority by dividing the priority by the number of days left until
-        due date.
-        """
+        #Calculates and returns the urgency of the task based on due date
+        #and priority by dividing the priority by the number of days left until
+        #due date.
+"""
         if self.due_date:
             # Next line of code with datetime comes from https://datatest.
             # readthedocs.io/en/stable/how-to/date-time-str.html and https:
@@ -61,7 +63,7 @@ class Task:
                 urgency = priority / (due_date - datetime.now()).days
                 return round(urgency, 2)
         return None
-
+    """
 
 class TaskHandler:
     """
@@ -103,16 +105,17 @@ class TaskHandler:
             print()
             print('Going back to the main menu')
             self.worksheet_handler.start_worksheet_loop()
-            # Loop with enumerate function to get both the index and the task
-            # with all the information about the task, starting index from 1
-            # instead of 0 to be more logical to the user
+        # Loop to get the task with all the information about every task
         for task in self.tasks:
-            urgency = task.calculate_urgency()
+            print(f'Task: {task.task_name} Description: {task.description} \
+            Due Date: {task.due_date}, Priority: {task.priority}')
+
+           # urgency = task.calculate_urgency()
             # If there is a due date, the urganecy is calculated and rounded
             # eith two decimals
-            urgency_message = f'Urgency: {round(urgency, 2)}' if urgency is \
-                not None else 'No due date'
-            print(f'{task.task_summary()}, {urgency_message}')
+           # urgency_message = f'Urgency: {round(urgency, 2)}' if urgency is \
+            #    not None else 'No due date'
+            #print(f'{task.task_summary()}, {urgency_message}')
         return self.tasks
 
     def validate_due_date_input(self, due_date):
@@ -130,6 +133,7 @@ class TaskHandler:
             return True
         except ValueError:
             # Date is not in the correct format
+            print('Invalid date format.')
             return False
 
     def add_task(self, task_data, worksheet_name=None, worksheet=None):
@@ -189,8 +193,7 @@ class TaskHandler:
         """
         Method to update the name of the task
         """
-        new_task_name = self.user_input_handler.get_update_task_input
-        ('Please enter a new task name.', task.task_name)
+        new_task_name = self.user_input_handler.get_update_task_input('Please enter a new task name.', task.task_name)
         if self.user_input_handler.handle_exit_condition(new_task_name):
             return
         task.task_name = new_task_name if new_task_name else \
@@ -200,8 +203,7 @@ class TaskHandler:
         """
         Method to update the description of the task
         """
-        new_description = self.user_input_handler.get_update_task_input
-        ('Please enter updated description', task.description)
+        new_description = self.user_input_handler.get_update_task_input('Please enter updated description', task.description)
         if self.user_input_handler.handle_exit_condition(new_description):
             return
         task.description = new_description if new_description \
@@ -212,11 +214,11 @@ class TaskHandler:
         Method to update the due date of the task
         """
         print(f'Current due date: {task.due_date}')
-        new_due_date = self.user_input_handler.get_update_task_input(
-            'Please enter updated due date (format dd/mm/yy)',
-            task.due_date)
+        new_due_date = self.user_input_handler.get_update_task_input('Please enter updated due date (format dd/mm/yy)', task.due_date)
         if self.user_input_handler.handle_exit_condition(new_due_date):
+            print('exit due to q method')
             return
+        print(f'entered {new_due_date}')
         if self.validate_due_date_input(new_due_date):
             task.due_date = new_due_date if new_due_date else\
                 task.due_date
@@ -228,8 +230,7 @@ class TaskHandler:
         """
         Method to update the priority of the task
         """
-        new_priority = self.user_input_handler.get_update_task_input
-        ('Please enter updated priority (1-10): ', task.priority)
+        new_priority = self.user_input_handler.get_update_task_input('Please enter updated priority (1-10): ', task.priority)
         if self.user_input_handler.handle_exit_condition(new_priority):
             return
         if new_priority:
@@ -300,9 +301,9 @@ class TaskHandler:
             # Sorted by the second element of each task
             sorted_tasks = sorted(tasks, key=lambda x: x[1])
         elif choice == '2':
-                # Sorted by the fourth element of each task
-                sorted_tasks = sorted(tasks, key=lambda x: datetime.strptime(
-                 x[3], '%d/%m/%y') if x[3] else datetime.max)
+            # Sorted by the fourth element of each task
+            sorted_tasks = sorted(tasks, key=lambda x: datetime.strptime(
+            x[3], '%d/%m/%y') if x[3] else datetime.max)
         elif choice == '3':
             # Sorted by the fifth element of each task
             sorted_tasks = sorted(tasks, key=lambda x: int(x[4]))
@@ -370,7 +371,7 @@ class WorksheetHandler:
         self.sheet = sheet
         self.worksheet_handler = None
         self.task_handler = None
-        self.user_input_handler = UserInputHandler(self, self.task_handler,
+        self.user_input_handler = UserInputHandler(self, self.task_handler,\
                                                    None)
 
     def get_worksheet(self, worksheet_name):
@@ -635,8 +636,7 @@ class UserInputHandler:
                 self.worksheet_handler.start_worksheet_loop()
             elif due_date == '':
                 return due_date
-            valid_due_date_input = task_handler.validate_due_date_input
-            (due_date)
+            valid_due_date_input = task_handler.validate_due_date_input(due_date)
             if valid_due_date_input:
                 return due_date
             print('Invalid date format. Please try agian.')
@@ -701,14 +701,15 @@ class UserInputHandler:
             user_input = input(f'{prompt} Current value: {current_value}. '
                                'Press Enter to keep current information, or '
                                'press q to go back to main menu): ')
-        if self.handle_exit_condition(user_input):
-            return user_input
+        self.handle_exit_condition(user_input)
+        return user_input
+        print(user_input)
 
     def handle_exit_condition(self, user_input):
         """
         The method handles the exit condition if user enter 'q'
         """
-        if user_input.lower() == 'q':
+        if str(user_input).lower() == 'q':
             print('Going back to the main menu')
             self.worksheet_handler.start_worksheet_loop()
             return True
@@ -752,7 +753,9 @@ class UserInputHandler:
 
 class TodoList:
     """
-    Class representing a to-do list.
+    Class to manage tasks within a to-do list. Settings is a dictionary with
+    configuration parameters which allows users to configure
+    the different components like task handling.
     """
     def __init__(self, settings):
         self.user_input_handler = settings.get('user_input_handler')
@@ -809,6 +812,7 @@ class TodoList:
                                                self.worksheet)
             elif choice == 'b':
                 self.task_handler.display_all_tasks()
+                print('debug')
                 task_name_to_update = input('Please enter the name of the task'
                                             ' you would like to update: ')
                 if task_name_to_update.lower() == 'q':
