@@ -36,34 +36,12 @@ class Task:
         self.due_date = due_date
         self.priority = priority
 
-    """
-        self.urgency = self.calculate_urgency()
-
     def task_summary(self):
         """
         #Returns a summary of the task.
-"""
+        """
         return f'Task: {self.task_name}, Description: {self.description}, \
         Due Date: {self.due_date}, Priority: {self.priority}'
-
-    def calculate_urgency(self):
-        """
-        #Calculates and returns the urgency of the task based on due date
-        #and priority by dividing the priority by the number of days left until
-        #due date.
-"""
-        if self.due_date:
-            # Next line of code with datetime comes from https://datatest.
-            # readthedocs.io/en/stable/how-to/date-time-str.html and https:
-            # //www.digitalocean.com/community/tutorials/python-string-to-
-            # datetime-strptime
-            due_date = datetime.strptime(self.due_date, '%d/%m/%y')
-            if self.priority is not None:
-                priority = int(self.priority)
-                urgency = priority / (due_date - datetime.now()).days
-                return round(urgency, 2)
-        return None
-    """
 
 class TaskHandler:
     """
@@ -107,15 +85,7 @@ class TaskHandler:
             self.worksheet_handler.start_worksheet_loop()
         # Loop to get the task with all the information about every task
         for task in self.tasks:
-            print(f'Task: {task.task_name} Description: {task.description} \
-            Due Date: {task.due_date}, Priority: {task.priority}')
-
-           # urgency = task.calculate_urgency()
-            # If there is a due date, the urganecy is calculated and rounded
-            # eith two decimals
-           # urgency_message = f'Urgency: {round(urgency, 2)}' if urgency is \
-            #    not None else 'No due date'
-            #print(f'{task.task_summary()}, {urgency_message}')
+            print(f'{task.task_summary()}')
         return self.tasks
 
     def validate_due_date_input(self, due_date):
@@ -133,7 +103,6 @@ class TaskHandler:
             return True
         except ValueError:
             # Date is not in the correct format
-            print('Invalid date format.')
             return False
 
     def add_task(self, task_data, worksheet_name=None, worksheet=None):
@@ -213,7 +182,6 @@ class TaskHandler:
         """
         Method to update the due date of the task
         """
-        print(f'Current due date: {task.due_date}')
         new_due_date = self.user_input_handler.get_update_task_input('Please enter updated due date (format dd/mm/yy)', task.due_date)
         if self.user_input_handler.handle_exit_condition(new_due_date):
             print('exit due to q method')
@@ -279,6 +247,7 @@ class TaskHandler:
             print('Going back to the main menu')
             self.worksheet_handler.start_worksheet_loop()
             return None
+        self.display_all_tasks()
         print('How would you like to sort your tasks?')
         print('1. Sort by task name (alphabetical order)')
         print('2. Sort by due date (The earliest date on the top of the '
@@ -566,6 +535,7 @@ class WorksheetHandler:
         """
         Prompt the user to enter the name of a worksheet.
         """
+        self.display_existing_worksheets()
         while True:
             worksheet_name = input('Please enter a to-do list '
                                    'name: \n').lower()
@@ -701,9 +671,8 @@ class UserInputHandler:
             user_input = input(f'{prompt} Current value: {current_value}. '
                                'Press Enter to keep current information, or '
                                'press q to go back to main menu): ')
-        self.handle_exit_condition(user_input)
-        return user_input
-        print(user_input)
+            self.handle_exit_condition(user_input)
+            return user_input
 
     def handle_exit_condition(self, user_input):
         """
