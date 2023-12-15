@@ -132,10 +132,8 @@ As a site administrator, I want to
 ## Testing
 
 ### Automated testing
-Automated testing was performed using [Pylint](https://pypi.org/project/pylint/) and [Code Institutet's Python linter](https://pep8ci.herokuapp.com/) to check the code. The file run.py revealed no errors or warnings in the code.
+Automated testing was performed using [Code Institutet's Python linter](https://pep8ci.herokuapp.com/) to check the code. The file run.py revealed no errors or warnings in the code.
 
-Pylint:
-![alt-text](documentation/pylint.png)
 Code Institutet's Python linter:
 ![alt-text](documentation/ci_pylinter.png)
 
