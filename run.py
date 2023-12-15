@@ -43,6 +43,7 @@ class Task:
         return f'Task: {self.task_name}, Description: {self.description}, \
         Due Date: {self.due_date}, Priority: {self.priority}'
 
+
 class TaskHandler:
     """
     Class for handling tasks by using a worksheet and the class for
@@ -162,7 +163,8 @@ class TaskHandler:
         """
         Method to update the name of the task
         """
-        new_task_name = self.user_input_handler.get_update_task_input('Please enter a new task name.', task.task_name)
+        new_task_name = self.user_input_handler.get_update_task_input(
+            'Please enter a new task name.', task.task_name)
         if self.user_input_handler.handle_exit_condition(new_task_name):
             return
         task.task_name = new_task_name if new_task_name else \
@@ -172,7 +174,8 @@ class TaskHandler:
         """
         Method to update the description of the task
         """
-        new_description = self.user_input_handler.get_update_task_input('Please enter updated description', task.description)
+        new_description = self.user_input_handler.get_update_task_input(
+            'Please enter updated description', task.description)
         if self.user_input_handler.handle_exit_condition(new_description):
             return
         task.description = new_description if new_description \
@@ -182,7 +185,8 @@ class TaskHandler:
         """
         Method to update the due date of the task
         """
-        new_due_date = self.user_input_handler.get_update_task_input('Please enter updated due date (format dd/mm/yy)', task.due_date)
+        new_due_date = self.user_input_handler.get_update_task_input(
+            'Please enter updated due date (format dd/mm/yy)', task.due_date)
         if self.user_input_handler.handle_exit_condition(new_due_date):
             print('exit due to q method')
             return
@@ -198,7 +202,8 @@ class TaskHandler:
         """
         Method to update the priority of the task
         """
-        new_priority = self.user_input_handler.get_update_task_input('Please enter updated priority (1-10): ', task.priority)
+        new_priority = self.user_input_handler.get_update_task_input(
+            'Please enter updated priority (1-10): ', task.priority)
         if self.user_input_handler.handle_exit_condition(new_priority):
             return
         if new_priority:
@@ -272,7 +277,7 @@ class TaskHandler:
         elif choice == '2':
             # Sorted by the fourth element of each task
             sorted_tasks = sorted(tasks, key=lambda x: datetime.strptime(
-            x[3], '%d/%m/%y') if x[3] else datetime.max)
+                x[3], '%d/%m/%y') if x[3] else datetime.max)
         elif choice == '3':
             # Sorted by the fifth element of each task
             sorted_tasks = sorted(tasks, key=lambda x: int(x[4]))
@@ -340,7 +345,7 @@ class WorksheetHandler:
         self.sheet = sheet
         self.worksheet_handler = None
         self.task_handler = None
-        self.user_input_handler = UserInputHandler(self, self.task_handler,\
+        self.user_input_handler = UserInputHandler(self, self.task_handler,
                                                    None)
 
     def get_worksheet(self, worksheet_name):
@@ -606,7 +611,8 @@ class UserInputHandler:
                 self.worksheet_handler.start_worksheet_loop()
             elif due_date == '':
                 return due_date
-            valid_due_date_input = task_handler.validate_due_date_input(due_date)
+            valid_due_date_input =\
+                task_handler.validate_due_date_input(due_date)
             if valid_due_date_input:
                 return due_date
             print('Invalid date format. Please try agian.')
@@ -781,7 +787,6 @@ class TodoList:
                                                self.worksheet)
             elif choice == 'b':
                 self.task_handler.display_all_tasks()
-                print('debug')
                 task_name_to_update = input('Please enter the name of the task'
                                             ' you would like to update: ')
                 if task_name_to_update.lower() == 'q':
