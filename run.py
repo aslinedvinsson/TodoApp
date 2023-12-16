@@ -195,7 +195,7 @@ class TaskHandler:
             task.due_date = new_due_date if new_due_date else\
                 task.due_date
         else:
-            print('No new due date entered or invalid date format. Task due '
+            print('No new due date entered or invalid date format. Due '
                   'date remains unchanged.')
 
     def update_priority(self, task):
@@ -489,8 +489,8 @@ class WorksheetHandler:
                   'viewing them.')
             print()
             print('What would you like to do? Choose one option by entering '
-                  'a number. You can press q whenever you want to quit or get '
-                  'back to the start and make a new choice')
+                  'a number. You can press q whenever you want to get '
+                  'back to this main menu and make a new choice')
             print('1. Create a new to-do list')
             print('2. Open a specific to-do list. Here you can then modify '
                   'your to-do list by handeling tasks in the to-do list')
