@@ -103,6 +103,7 @@ To represent tasks, the code utilizes a Task class, incorporating attributes lik
 ### Possible Future Features
 #### Future user stories
 As a user, I want to
+- I desire the ability to have a broader range of choices when deciding on actions, without consistently returning to the main menu.
 - mark tasks as completed so that I can easily track my progress and identify the tasks that still need attention.
 - receive notifications or reminders for upcoming tasks or deadlines to help me stay on top of my responsibilities.
 - sort the tasks by calculating the urgency
